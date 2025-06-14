@@ -13,13 +13,11 @@ config = get_config()
 
 _get_next_v3_card_original = Reviewer._get_next_v3_card
 
-
 cache = {}
 
 
 def _key_exp_knowledge_gain(x):
     card = x.card
-
     deck_id = card.deck_id
 
     state = (
@@ -74,20 +72,28 @@ def get_next_v3_card_patched(self) -> None:
 
         # Get the top card based on expected knowledge gain
         counts = self._v3.counts()[1]
-        type_limits = {
-            QueuedCards.NEW: counts[0],
-            QueuedCards.LEARNING: counts[1],
-            QueuedCards.REVIEW: counts[2],
-        }
-        filtered_cards = [
-            card for card in output_all.cards if type_limits[card.queue] > 0
-        ]
 
         cache["today"] = mw.col.sched.today
         cache["new_rating_probs"] = {}
-        sorted_cards = sorted(filtered_cards, key=_key_exp_knowledge_gain, reverse=True)
+        sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain, reverse=True)
 
-        self._cards_cached = sorted_cards
+        filtered_counts = [0, 0, 0]
+        filtered_cards = []
+        for card in sorted_cards:
+            if card.queue == QueuedCards.NEW:
+                if filtered_counts[0] < counts[0]:
+                    filtered_cards.append(card)
+                    filtered_counts[0] += 1
+            elif card.queue == QueuedCards.LEARNING:
+                if filtered_counts[1] < counts[1]:
+                    filtered_cards.append(card)
+                    filtered_counts[1] += 1
+            elif card.queue == QueuedCards.REVIEW:
+                if filtered_counts[2] < counts[2]:
+                    filtered_cards.append(card)
+                    filtered_counts[2] += 1
+
+        self._cards_cached = filtered_cards
     else:
         # Disable undo
         self.mw.col.sched.extend_limits(0, 0)

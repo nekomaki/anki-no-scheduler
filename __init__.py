@@ -19,7 +19,7 @@ def toggle_display_knowledge_gain():
     action_display_knowledge_gain.setChecked(config.display)
 
 
-menu = mw.form.menuTools.addMenu("Review order by knowledge gain")
+menu = mw.form.menuTools.addMenu("Review Order by Knowledge Gain")
 
 action_sort_cards = QAction("Order cards by knowledge gain", mw, checkable=True)
 action_sort_cards.triggered.connect(toggle_sort_cards)
