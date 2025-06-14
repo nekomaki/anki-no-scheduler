@@ -78,7 +78,7 @@ where
 For FSRS-6, the EMA knowledge is given by:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = -(\ln \gamma) \cdot \frac{S}{F} \cdot \gamma^{-S/F} \cdot \frac{\Gamma(D+1, c(T + S/F))}{(S c / F)^{D+1}}
+J_{\text{EMA}}(\text{card}, T; \gamma) = \gamma^{-S/F-T} (cS / F)^{-D} \cdot \Gamma(D+1, c(T + S/F))
 $$
 
 where
