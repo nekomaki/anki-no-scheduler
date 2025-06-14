@@ -55,13 +55,22 @@ def get_next_v3_card_patched(self) -> None:
         return
     self._v3 = V3CardInfo.from_queue(output)
 
+    counts = self._v3.counts()[1]
+    queue_to_index = {
+        QueuedCards.NEW: 0,
+        QueuedCards.LEARNING: 1,
+        QueuedCards.REVIEW: 2,
+    }
+
     deck_id = self.mw.col.decks.current()['id']
+
     if (
-        not hasattr(self, "_cards_cached")
+        not getattr(self, "_cards_cached", None)
         or getattr(self, "_deck_id_cached", None) != deck_id
+        or counts[queue_to_index[self._cards_cached[-1].queue]] <= 0
         or mw.col.sched.today != cache.get("today", None)
     ):
-        self._cards_cached = []
+        # Refresh the cache
         self._deck_id_cached = deck_id
 
         # Fetch all cards
@@ -75,22 +84,16 @@ def get_next_v3_card_patched(self) -> None:
         cache["new_rating_probs"] = {}
         sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain)
 
-        counts = self._v3.counts()[1]
         filtered_counts = [0, 0, 0]
         filtered_cards = []
         for card in sorted_cards:
-            if card.queue == QueuedCards.NEW:
-                if filtered_counts[0] < counts[0]:
-                    filtered_cards.append(card)
-                    filtered_counts[0] += 1
-            elif card.queue == QueuedCards.LEARNING:
-                if filtered_counts[1] < counts[1]:
-                    filtered_cards.append(card)
-                    filtered_counts[1] += 1
-            elif card.queue == QueuedCards.REVIEW:
-                if filtered_counts[2] < counts[2]:
-                    filtered_cards.append(card)
-                    filtered_counts[2] += 1
+            if card.queue not in queue_to_index:
+                raise ValueError(f"Unknown queue type: {card.queue}")
+
+            index = queue_to_index[card.queue]
+            if filtered_counts[index] < counts[index]:
+                filtered_cards.append(card)
+                filtered_counts[index] += 1
 
         self._cards_cached = list(reversed(filtered_cards))
     else:
