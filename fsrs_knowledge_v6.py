@@ -32,7 +32,7 @@ def knowledge_ema(
         decay = math.log(0.9) / math.log(factor + 1)
 
     alpha = stability / factor
-    lgamma = -math.log(gamma)  # positive
+    lgamma = -math.log(gamma)
 
     def compute(x0, exponent):
         return math.exp(
@@ -72,12 +72,12 @@ def _fsrs_simulate_wrapper(fsrs_params):
             R = power_forgetting_curve(t_review, S, -fsrs_params[20])
 
         # We only consider two outcomes
-        G = [1, 3]
+        ratings = [1, 3]
         probs = [1 - R, R]
         D04 = w[4] - math.exp(w[5] * (4 - 1)) + 1
 
         res = []
-        for prob, rating in zip(probs, G):
+        for prob, rating in zip(probs, ratings):
             # Compute new difficulty
             new_difficulty = w[7] * D04 + (1 - w[7]) * (D - w[6] * (rating - 3))
 
@@ -87,7 +87,7 @@ def _fsrs_simulate_wrapper(fsrs_params):
                 new_stability = (
                     S * math.exp(w[17] * (rating - 3 + w[18])) * S ** (-w[19])
                 )
-                workload += FORGET_WORKLOAD
+                workload = FORGET_WORKLOAD
             else:
                 if rating == 1:
                     # Forget
@@ -97,7 +97,7 @@ def _fsrs_simulate_wrapper(fsrs_params):
                         * ((S + 1) ** w[13] - 1)
                         * math.exp(w[14] * (1 - R))
                     )
-                    workload += FORGET_WORKLOAD
+                    workload = FORGET_WORKLOAD
                 else:
                     new_stability = S * (
                         math.exp(w[8])
@@ -128,11 +128,11 @@ def _fsrs_simulate(state, fsrs_params, t_review, retention=None):
 
 
 @functools.cache
-def _fsrs_simulate_with_probs_wrapper(fsrs_params):
+def _fsrs_simulate_with_probs_wrapper(fsrs_params, probs):
     w = fsrs_params
 
     @functools.lru_cache(maxsize=5000)
-    def fsrs_simulate_with_probs_cached(state, t_review, probs, retention=None):
+    def fsrs_simulate_with_probs_cached(state, t_review, retention=None):
         (D, S), R = state, retention
 
         if R is None:
@@ -151,13 +151,13 @@ def _fsrs_simulate_with_probs_wrapper(fsrs_params):
             if S == 0:
                 # New card
                 new_stability = w[rating - 1]
-                workload += NEW_WORKLOAD
+                workload = NEW_WORKLOAD
             elif t_review < 1:
                 # Same day review
                 new_stability = (
                     S * math.exp(w[17] * (rating - 3 + w[18])) * S ** (-w[19])
                 )
-                workload += FORGET_WORKLOAD
+                workload = FORGET_WORKLOAD
             else:
                 if rating == 1:
                     # Forget
@@ -167,7 +167,7 @@ def _fsrs_simulate_with_probs_wrapper(fsrs_params):
                         * ((S + 1) ** w[13] - 1)
                         * math.exp(w[14] * (1 - R))
                     )
-                    workload += FORGET_WORKLOAD
+                    workload = FORGET_WORKLOAD
                 else:
                     new_stability = S * (
                         math.exp(w[8])
@@ -193,9 +193,11 @@ def _fsrs_simulate_with_probs_wrapper(fsrs_params):
 def _fsrs_simulate_with_probs(state, fsrs_params, t_review, probs, retention=None):
     if isinstance(fsrs_params, list):
         fsrs_params = tuple(fsrs_params)
+    if isinstance(probs, list):
+        probs = tuple(probs)
 
-    return _fsrs_simulate_with_probs_wrapper(fsrs_params)(
-        state, t_review, probs, retention
+    return _fsrs_simulate_with_probs_wrapper(fsrs_params, probs)(
+        state, t_review, retention
     )
 
 
@@ -229,15 +231,20 @@ def _compute_reviewed_knowledge(state, fsrs_params, elapsed_days):
     return knowledge
 
 
+def compute_current_knowledge(state, fsrs_params, elapsed_days):
+    if state[1] == 0:
+        return 0.0
+
+    return knowledge_ema(state[1], decay=-fsrs_params[20], t_begin=elapsed_days)
+
+
 def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
     if state[1] == 0:
         return _compute_new_knowledge(
             state, fsrs_params, elapsed_days, new_rating_probs
         )
 
-    current_knowledge = knowledge_ema(
-        state[1], decay=-fsrs_params[20], t_begin=elapsed_days
-    )
+    current_knowledge = compute_current_knowledge(state, fsrs_params, elapsed_days)
     reviewed_knowledge = _compute_reviewed_knowledge(state, fsrs_params, elapsed_days)
 
     return reviewed_knowledge - current_knowledge

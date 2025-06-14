@@ -79,5 +79,5 @@ def get_new_rating_probs(deck_id):
     )
 
     total = sum(count for _, count in rows)
-    new_card_probs = (count / total for _ease, count in rows)
+    new_card_probs = [count / total for _ease, count in rows]
     return new_card_probs

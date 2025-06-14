@@ -1,3 +1,6 @@
+from .fsrs_knowledge_v6 import (
+    compute_current_knowledge as compute_current_knowledge_v6,
+)
 from .fsrs_knowledge_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .fsrs_knowledge_v6 import knowledge_ema as knowledge_ema_v6
 from .fsrs_knowledge_v6 import (
@@ -30,6 +33,11 @@ def knowledge_ema(stability, t_begin=None, t_end=None, gamma=GAMMA):
         gamma=gamma,
     )
 
+
+def compute_current_knowledge(state, fsrs_params, elapsed_days):
+    fsrs_params = tuple(fsrs_params) + (0.0, -DECAY)
+
+    return compute_current_knowledge_v6(state, fsrs_params, elapsed_days)
 
 def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
     fsrs_params = tuple(fsrs_params) + (0.0, -DECAY)
