@@ -75,7 +75,7 @@ def get_next_v3_card_patched(self) -> None:
 
         cache["today"] = mw.col.sched.today
         cache["new_rating_probs"] = {}
-        sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain, reverse=True)
+        sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain)
 
         filtered_counts = [0, 0, 0]
         filtered_cards = []
@@ -93,7 +93,7 @@ def get_next_v3_card_patched(self) -> None:
                     filtered_cards.append(card)
                     filtered_counts[2] += 1
 
-        self._cards_cached = filtered_cards
+        self._cards_cached = list(reversed(filtered_cards))
     else:
         # Disable undo
         self.mw.col.sched.extend_limits(0, 0)

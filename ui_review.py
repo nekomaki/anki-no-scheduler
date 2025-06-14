@@ -10,7 +10,7 @@ from .utils import get_last_review_date, get_new_rating_probs
 config = get_config()
 
 
-def on_card_did_render(
+def _on_card_did_render(
     output: TemplateRenderOutput, context: TemplateRenderContext
 ) -> None:
     if not config.display:
@@ -54,4 +54,4 @@ def on_card_did_render(
 
 
 def init_ui_review_hook():
-    hooks.card_did_render.append(on_card_did_render)
+    hooks.card_did_render.append(_on_card_did_render)
