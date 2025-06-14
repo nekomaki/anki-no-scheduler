@@ -8,6 +8,8 @@ addon_identifier = mw.addonManager.addonFromModule(__name__)
 class Config(object):
     def __init__(self):
         self.data = mw.addonManager.getConfig(addon_identifier)
+        if not self.data:
+            self.data = dict()
 
     @property
     def sort_cards(self):
