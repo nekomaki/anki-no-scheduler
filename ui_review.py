@@ -46,7 +46,7 @@ def on_card_did_render(
     msg = f"""<br><br>
     <div style="text-align: center;">
         <span id="ekg_status" style="font-size:12px;opacity:0.5;font-family:monospace;">
-            Expected knowledge gain: {ekg:.2f}
+            Expected knowledge gain: {ekg:.3f}
         </span>
     </div>"""
 

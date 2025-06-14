@@ -34,12 +34,16 @@ def knowledge_ema(stability, t_begin=None, t_end=None, gamma=GAMMA):
     )
 
 
-def compute_current_knowledge(state, fsrs_params, elapsed_days):
-    fsrs_params = tuple(fsrs_params) + (0.0, -DECAY)
+def compute_current_knowledge(state, elapsed_days):
+    return compute_current_knowledge_v6(state, DECAY, elapsed_days)
 
-    return compute_current_knowledge_v6(state, fsrs_params, elapsed_days)
 
 def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
     fsrs_params = tuple(fsrs_params) + (0.0, -DECAY)
 
-    return exp_knowledge_gain_v6(state, fsrs_params, elapsed_days, new_rating_probs)
+    return exp_knowledge_gain_v6(
+        state,
+        fsrs_params=fsrs_params,
+        elapsed_days=elapsed_days,
+        new_rating_probs=new_rating_probs,
+    )

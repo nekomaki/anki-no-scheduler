@@ -1,4 +1,3 @@
-import functools
 import math
 from typing import List
 
@@ -62,7 +61,6 @@ def get_decay(card: Card):
     return getattr(card, "decay", 0.5) or 0.5
 
 
-@functools.cache
 def get_new_rating_probs(deck_id):
     rows = mw.col.db.all(
         f"""
@@ -79,5 +77,5 @@ def get_new_rating_probs(deck_id):
     )
 
     total = sum(count for _, count in rows)
-    new_card_probs = [count / total for _ease, count in rows]
+    new_card_probs = [(count + 1) / (total + 4) for _ease, count in rows]
     return new_card_probs

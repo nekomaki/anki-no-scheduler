@@ -231,11 +231,11 @@ def _compute_reviewed_knowledge(state, fsrs_params, elapsed_days):
     return knowledge
 
 
-def compute_current_knowledge(state, fsrs_params, elapsed_days):
+def compute_current_knowledge(state, decay, elapsed_days):
     if state[1] == 0:
         return 0.0
 
-    return knowledge_ema(state[1], decay=-fsrs_params[20], t_begin=elapsed_days)
+    return knowledge_ema(state[1], decay=decay, t_begin=elapsed_days)
 
 
 def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
@@ -244,7 +244,11 @@ def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
             state, fsrs_params, elapsed_days, new_rating_probs
         )
 
-    current_knowledge = compute_current_knowledge(state, fsrs_params, elapsed_days)
-    reviewed_knowledge = _compute_reviewed_knowledge(state, fsrs_params, elapsed_days)
+    current_knowledge = compute_current_knowledge(
+        state, decay=-fsrs_params[20], elapsed_days=elapsed_days
+    )
+    reviewed_knowledge = _compute_reviewed_knowledge(
+        state, fsrs_params=fsrs_params, elapsed_days=elapsed_days
+    )
 
     return reviewed_knowledge - current_knowledge
