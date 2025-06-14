@@ -71,12 +71,11 @@ def get_next_v3_card_patched(self) -> None:
         self.mw.col.sched.extend_limits(0, -extend_limits)
 
         # Get the top card based on expected knowledge gain
-        counts = self._v3.counts()[1]
-
         cache["today"] = mw.col.sched.today
         cache["new_rating_probs"] = {}
         sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain)
 
+        counts = self._v3.counts()[1]
         filtered_counts = [0, 0, 0]
         filtered_cards = []
         for card in sorted_cards:
