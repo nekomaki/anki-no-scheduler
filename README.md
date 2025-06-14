@@ -11,4 +11,3 @@ Reorder your Anki queue by **expected knowledge gain** to maximize learning effi
 
 - **Undo is not supported**
 - Performance may degrade on large decks
-- Changes in card state (e.g., relearning a card) or FSRS parameters require restarting the addon to take effect
