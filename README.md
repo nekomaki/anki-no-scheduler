@@ -60,9 +60,10 @@ $$
 J_{\text{EMA}}(\text{card}, T; \gamma) = -\ln \gamma \int_{0}^{\infty} R(\text{card}, t) \gamma^t \, dt
 $$
 
-This integral gives you a weighted blend of present and future knowledge, ideal for systems that need to prioritize near-term performance without ignoring the long tail of forgetting.
+This integral gives you a weighted blend of present and future knowledge.
 
 For FSRS-4.5 and FSRS-5, there’s a closed-form expression for it:
+
 $$
 J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi A} \, \text{erfcx}\left(\sqrt{A - T \ln \gamma}\right)
 $$
