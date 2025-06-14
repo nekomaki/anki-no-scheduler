@@ -1,1 +1,1 @@
-{"name": "Review order by knowledge gain", "disabled": false, "mod": 1749807079, "conflicts": [], "max_point_version": 0, "min_point_version": 0, "branch_index": 0, "update_enabled": true, "config": {"sort_cards": true, "display": true}}
+{"name": "Review Order by Knowledge Gain", "disabled": true, "mod": 1749807079, "conflicts": [], "max_point_version": 0, "min_point_version": 0, "branch_index": 0, "update_enabled": true, "config": {"sort_cards": true, "display": true}}
