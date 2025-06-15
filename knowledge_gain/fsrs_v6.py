@@ -1,9 +1,9 @@
 import functools
 import math
 
-from .fsrs_utils import log_gamma
+from .utils import log_gamma
 
-GAMMA = 0.99
+GAMMA = 0.95
 
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
@@ -79,7 +79,9 @@ def _fsrs_simulate_wrapper(fsrs_params):
         res = []
         for prob, rating in zip(probs, ratings):
             # Compute new difficulty
-            new_difficulty = w[7] * D04 + (1 - w[7]) * (D - w[6] * (rating - 3))
+            delta_difficulty = -w[6] * (rating - 3)
+            difficulty_prime = D + delta_difficulty * (10 - D) / 9
+            new_difficulty = w[7] * D04 + (1 - w[7]) * difficulty_prime
 
             workload = 1
             if t_review < 1:
@@ -109,8 +111,8 @@ def _fsrs_simulate_wrapper(fsrs_params):
                         + 1
                     )
 
-            # new_difficulty = min(D_MAX, max(D_MIN, new_difficulty))
-            new_difficulty = D
+            new_difficulty = min(D_MAX, max(D_MIN, new_difficulty))
+            # new_difficulty = D
             new_stability = min(S_MAX, max(S_MIN, new_stability))
 
             res.append((prob, (new_difficulty, new_stability), workload))
@@ -179,8 +181,8 @@ def _fsrs_simulate_with_probs_wrapper(fsrs_params, probs):
                         + 1
                     )
 
-            # new_difficulty = min(D_MAX, max(D_MIN, new_difficulty))
-            new_difficulty = D
+            new_difficulty = min(D_MAX, max(D_MIN, new_difficulty))
+            # new_difficulty = D
             new_stability = min(S_MAX, max(S_MIN, new_stability))
 
             res.append((prob, (new_difficulty, new_stability), workload))
@@ -252,3 +254,14 @@ def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
     )
 
     return reviewed_knowledge - current_knowledge
+
+if __name__ == "__main__":
+    state = (1.0, 1)
+    fsrs_params = [1.0191, 8.2268, 17.8704, 100.0000, 6.6634, 0.7805, 2.2023, 0.0241, 1.9304, 0.0000, 1.3965, 1.7472, 0.1247, 0.1160, 2.2431, 0.4258, 3.1303, 0.9678, 0.2470, 0.1150, 0.1000]
+    elapsed_days = 10
+    new_rating_probs = [0.1, 0.2, 0.3, 0.4]
+
+    knowledge_gain = exp_knowledge_gain(
+        state, fsrs_params, elapsed_days, new_rating_probs
+    )
+    print(f"Expected knowledge gain: {knowledge_gain:.3f}")

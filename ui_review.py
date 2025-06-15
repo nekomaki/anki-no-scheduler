@@ -3,8 +3,8 @@ from anki.template import TemplateRenderContext, TemplateRenderOutput
 from aqt import mw
 
 from .config import get_config
-from .fsrs_knowledge_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
-from .fsrs_knowledge_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
+from .knowledge_gain.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
+from .knowledge_gain.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .utils import get_last_review_date, get_new_rating_probs
 
 config = get_config()

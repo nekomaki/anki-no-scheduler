@@ -22,7 +22,7 @@ class Config(object):
 
     @property
     def display_status(self):
-        return self.data.get("display_status", False)
+        return self.data.get("display_status", True)
 
     @display_status.setter
     def display_status(self, value):

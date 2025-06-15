@@ -5,8 +5,8 @@ from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config import get_config
-from .fsrs_knowledge_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
-from .fsrs_knowledge_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
+from .knowledge_gain.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
+from .knowledge_gain.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .utils import get_last_review_date, get_new_rating_probs
 
 config = get_config()
@@ -102,6 +102,7 @@ def _get_next_v3_card_patched(self) -> None:
         # Make a stack of the filtered cards
         self._cards_cached = list(reversed(filtered_cards))
     else:
+        # Disable undo
         self.mw.col.sched.extend_limits(0, 0)
 
     top_card = self._cards_cached[-1]
