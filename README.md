@@ -20,7 +20,7 @@ Work in progress, but already functional.
 This addon estimates **long-term knowledge** using **exponential moving average (EMA)** retrievability:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = -\ln \gamma \int_{0}^{\infty} R(\text{card}, T) \gamma^t \mathrm{d}t
+J_{\text{EMA}}(\text{card}, T; \gamma) = -\log \gamma \int_{0}^{\infty} R(\text{card}, T + t) \gamma^t \mathrm{d}t
 $$
 
 where
@@ -32,13 +32,12 @@ where
 For FSRS 4.5 and 5, there’s a closed-form expression for it:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi A} \cdot \text{erfcx}\left(\sqrt{A - T \ln \gamma}\right)
+J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi A} \cdot \text{erfcx}\left(\sqrt{A - T \log \gamma}\right)
 $$
 
 where
 
-* $S$: stability of the card
-* $A = -\frac{S}{\text{FACTOR}} \ln \gamma$
+* $A = -\frac{\text{stability}}{\text{FACTOR}} \log \gamma$
 
 For FSRS 6, the EMA knowledge is given by:
 
@@ -49,4 +48,4 @@ $$
 where
 
 * $D$ and $F$: decay and factor of the card
-* $\alpha = \frac{S}{\text{F}}$
+* $\alpha = \text{stability} / \text{F}$
