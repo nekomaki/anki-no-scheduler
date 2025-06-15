@@ -3,7 +3,7 @@ from .fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .fsrs_v6 import knowledge_ema as knowledge_ema_v6
 from .fsrs_v6 import power_forgetting_curve as power_forgetting_curve_v6
 
-GAMMA = 0.99
+GAMMA = 0.95
 
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
