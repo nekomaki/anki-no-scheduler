@@ -65,10 +65,11 @@ def get_next_v3_card_patched(self) -> None:
     deck_id = self.mw.col.decks.current()['id']
 
     if (
-        not getattr(self, "_cards_cached", None)
-        or getattr(self, "_deck_id_cached", None) != deck_id
-        or counts[queue_to_index[self._cards_cached[-1].queue]] <= 0
-        or mw.col.sched.today != cache.get("today", None)
+        getattr(self, "_cards_cached", None)
+        and getattr(self, "_deck_id_cached", None) == deck_id
+        and sum(counts) == len(self._cards_cached)
+        and counts[queue_to_index[self._cards_cached[-1].queue]] > 0
+        and mw.col.sched.today == cache.get("today", None)
     ):
         # Refresh the cache
         self._deck_id_cached = deck_id
@@ -84,6 +85,7 @@ def get_next_v3_card_patched(self) -> None:
         cache["new_rating_probs"] = {}
         sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain)
 
+        # Filter cards based on the counts
         filtered_counts = [0, 0, 0]
         filtered_cards = []
         for card in sorted_cards:
@@ -95,6 +97,7 @@ def get_next_v3_card_patched(self) -> None:
                 filtered_cards.append(card)
                 filtered_counts[index] += 1
 
+        # Make a stack of the filtered cards
         self._cards_cached = list(reversed(filtered_cards))
     else:
         # Disable undo
