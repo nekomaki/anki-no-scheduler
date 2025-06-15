@@ -203,7 +203,7 @@ def _fsrs_simulate_with_probs(state, fsrs_params, t_review, probs, retention=Non
     )
 
 
-def _compute_new_knowledge(state, fsrs_params, elapsed_days, new_rating_probs):
+def _calc_new_knowledge(state, fsrs_params, elapsed_days, new_rating_probs):
     decay = -fsrs_params[20]
     factor = 0.9 ** (1 / decay) - 1
 
@@ -219,7 +219,7 @@ def _compute_new_knowledge(state, fsrs_params, elapsed_days, new_rating_probs):
     return knowledge
 
 
-def _compute_reviewed_knowledge(state, fsrs_params, elapsed_days):
+def _calc_reviewed_knowledge(state, fsrs_params, elapsed_days):
     decay = -fsrs_params[20]
     factor = 0.9 ** (1 / decay) - 1
 
@@ -233,7 +233,7 @@ def _compute_reviewed_knowledge(state, fsrs_params, elapsed_days):
     return knowledge
 
 
-def compute_current_knowledge(state, decay, elapsed_days):
+def calc_current_knowledge(state, decay, elapsed_days):
     if state[1] == 0:
         return 0.0
 
@@ -242,14 +242,14 @@ def compute_current_knowledge(state, decay, elapsed_days):
 
 def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
     if state[1] == 0:
-        return _compute_new_knowledge(
+        return _calc_new_knowledge(
             state, fsrs_params, elapsed_days, new_rating_probs
         )
 
-    current_knowledge = compute_current_knowledge(
+    current_knowledge = calc_current_knowledge(
         state, decay=-fsrs_params[20], elapsed_days=elapsed_days
     )
-    reviewed_knowledge = _compute_reviewed_knowledge(
+    reviewed_knowledge = _calc_reviewed_knowledge(
         state, fsrs_params=fsrs_params, elapsed_days=elapsed_days
     )
 

@@ -2,20 +2,30 @@
 
 Reorder your Anki queue by **expected knowledge gain** to maximize learning efficiency.
 
-Work in progress, but already functional.
+## How it works?
+
+This addon introduces a new review strategy that goes beyond Anki’s built-in options (like "easy cards first" or "descending retrievability"). It prioritizes cards that contribute the most to your long-term memory.
+
+Long-term knowledge is estimated using an exponential moving average (EMA) of retrievability. This produces a score between 0 and 1 that reflects how well a card is expected to be remembered over time.
+
+The addon calculates the expected gain in long-term knowledge for each card and reorders your review queue so that the cards with the highest expected gain are reviewed first.
 
 ## Features
 
 - Reorders **new**, **learning**, and **review** cards within the daily queue
+- Displays **expected knowledge gain** for each card
 - Compatible with FSRS V5 and V6
 
 ## Limitations
 
 - **Undo is not supported**
+- Work in progress, but already functional.
+- This addon currently maximizes expected knowledge gain per single review. However, long-term knowledge is built over multiple reviews. New cards often yield low immediate gain, but their contribution increases significantly after a few successful reviews. For best results, use this addon alongside a well-tuned scheduler (e.g. with an appropriate desired retention setting).
+ A full scheduling strategy is under development.
 
 ---
 
-## Knowledge computation
+## Long-term knowledge computation
 
 This addon estimates **long-term knowledge** using **exponential moving average (EMA)** retrievability:
 

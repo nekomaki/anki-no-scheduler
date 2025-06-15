@@ -1,4 +1,4 @@
-from .fsrs_v6 import compute_current_knowledge as compute_current_knowledge_v6
+from .fsrs_v6 import calc_current_knowledge as compute_current_knowledge_v6
 from .fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .fsrs_v6 import knowledge_ema as knowledge_ema_v6
 from .fsrs_v6 import power_forgetting_curve as power_forgetting_curve_v6
@@ -30,7 +30,7 @@ def knowledge_ema(stability, t_begin=None, t_end=None, gamma=GAMMA):
     )
 
 
-def compute_current_knowledge(state, elapsed_days):
+def calc_current_knowledge(state, elapsed_days):
     return compute_current_knowledge_v6(state, DECAY, elapsed_days)
 
 
