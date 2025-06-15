@@ -21,12 +21,13 @@ Work in progress, but already functional.
 This addon estimates **long-term knowledge** using **exponential moving average (EMA)** retrievability:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = -\ln \gamma \int_{0}^{\infty} R(\text{card}, T) \gamma^t \, dt
+J_{\text{EMA}}(\text{card}, T; \gamma) = -\ln \gamma \int_{0}^{\infty} R(\text{card}, T) \gamma^t \mathrm{d}t
 $$
 
 where
 
-* $R(\text{card}, T)$: retrievability of the card at time $T$ since the last review
+* $T$: time since the last review
+* $R(\text{card}, T)$: retrievability of the card
 * $\gamma$: exponential decay factor, typically around 0.99
 
 For FSRS 4.5 and 5, there’s a closed-form expression for it:
