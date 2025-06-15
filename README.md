@@ -12,7 +12,6 @@ Work in progress, but already functional.
 ## Limitations
 
 - **Undo is not supported**
-- Performance may degrade on large decks
 
 ---
 
@@ -33,7 +32,7 @@ where
 For FSRS 4.5 and 5, there’s a closed-form expression for it:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi A} \, \text{erfcx}\left(\sqrt{A - T \ln \gamma}\right)
+J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi A} \cdot \text{erfcx}\left(\sqrt{A - T \ln \gamma}\right)
 $$
 
 where
