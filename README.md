@@ -43,10 +43,10 @@ where
 For FSRS 6, the EMA knowledge is given by:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = \gamma^{-S/F-T} (cS / F)^{-D} \cdot \Gamma(D+1, c(T + S/F))
+J_{\text{EMA}}(\text{card}, T; \gamma) = \gamma^{-\alpha-T} (-\alpha\log\gamma)^{-D} \cdot \Gamma(D+1, -(T + \alpha)\log\gamma)
 $$
 
 where
 
 * $D$ and $F$: decay and factor of the card
-* $c = -\ln \gamma$
+* $\alpha = \frac{S}{\text{F}}$
