@@ -48,7 +48,7 @@ def _key_exp_knowledge_gain(x):
         return 0
 
 
-def get_next_v3_card_patched(self) -> None:
+def _get_next_v3_card_patched(self) -> None:
     assert isinstance(self.mw.col.sched, V3Scheduler)
     output = self.mw.col.sched.get_queued_cards()
     if not output.cards:
@@ -65,22 +65,24 @@ def get_next_v3_card_patched(self) -> None:
     deck_id = self.mw.col.decks.current()['id']
 
     if (
-        getattr(self, "_cards_cached", None)
-        and getattr(self, "_deck_id_cached", None) == deck_id
-        and sum(counts) == len(self._cards_cached)
-        and counts[queue_to_index[self._cards_cached[-1].queue]] > 0
-        and mw.col.sched.today == cache.get("today", None)
+        not hasattr(self, "_cards_cached")
+        or self._cards_cached is None
+        or getattr(self, "_deck_id_cached", None) != deck_id
+        or sum(counts) != len(self._cards_cached)
+        or counts[queue_to_index[self._cards_cached[-1].queue]] <= 0
+        or mw.col.sched.today != cache.get("today", None)
     ):
         # Refresh the cache
         self._deck_id_cached = deck_id
 
         # Fetch all cards
         extend_limits = self.mw.col.card_count()
+
         self.mw.col.sched.extend_limits(0, extend_limits)
         output_all = self.mw.col.sched.get_queued_cards(fetch_limit=extend_limits)
         self.mw.col.sched.extend_limits(0, -extend_limits)
 
-        # Get the top card based on expected knowledge gain
+        # Sort the cards by expected knowledge gain
         cache["today"] = mw.col.sched.today
         cache["new_rating_probs"] = {}
         sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain)
@@ -100,7 +102,6 @@ def get_next_v3_card_patched(self) -> None:
         # Make a stack of the filtered cards
         self._cards_cached = list(reversed(filtered_cards))
     else:
-        # Disable undo
         self.mw.col.sched.extend_limits(0, 0)
 
     top_card = self._cards_cached[-1]
@@ -128,7 +129,7 @@ def _on_card_answered(reviewer, card, ease):
 
 def update_ranker():
     if config.sort_cards:
-        Reviewer._get_next_v3_card = get_next_v3_card_patched
+        Reviewer._get_next_v3_card = _get_next_v3_card_patched
     else:
         Reviewer._get_next_v3_card = _get_next_v3_card_original
 

@@ -21,12 +21,12 @@ class Config(object):
         self.save()
 
     @property
-    def display(self):
-        return self.data.get("display", True)
+    def display_status(self):
+        return self.data.get("display_status", False)
 
-    @display.setter
-    def display(self, value):
-        self.data["display"] = value
+    @display_status.setter
+    def display_status(self, value):
+        self.data["display_status"] = value
         self.save()
 
     def save(self):

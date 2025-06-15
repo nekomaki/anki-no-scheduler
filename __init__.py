@@ -14,24 +14,21 @@ def toggle_sort_cards():
     update_ranker()
 
 
-def toggle_display_knowledge_gain():
-    config.display = not config.display
-    action_display_knowledge_gain.setChecked(config.display)
-
-
 menu = mw.form.menuTools.addMenu("Review Order by Knowledge Gain")
 
 action_sort_cards = QAction("Order cards by knowledge gain", mw, checkable=True)
-action_sort_cards.triggered.connect(toggle_sort_cards)
 action_sort_cards.setChecked(config.sort_cards)
+action_sort_cards.triggered.connect(toggle_sort_cards)
 
-action_display_knowledge_gain = QAction("Display knowledge gain", mw, checkable=True)
-action_display_knowledge_gain.triggered.connect(toggle_display_knowledge_gain)
-action_display_knowledge_gain.setChecked(config.display)
+action_display_status = QAction("Display knowledge gain", mw, checkable=True)
+action_display_status.setChecked(config.display_status)
+action_display_status.triggered.connect(
+    lambda: setattr(config, "display_status", action_display_status.isChecked())
+)
 
 menu.addAction(action_sort_cards)
 menu.addSeparator()
-menu.addAction(action_display_knowledge_gain)
+menu.addAction(action_display_status)
 
 init_ranker()
 init_ui_review_hook()

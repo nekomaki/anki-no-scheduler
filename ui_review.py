@@ -13,7 +13,7 @@ config = get_config()
 def _on_card_did_render(
     output: TemplateRenderOutput, context: TemplateRenderContext
 ) -> None:
-    if not config.display:
+    if not config.display_status:
         return
 
     card = context.card()
