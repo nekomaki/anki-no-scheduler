@@ -34,7 +34,7 @@ def calc_current_knowledge(state, elapsed_days):
     return compute_current_knowledge_v6(state, DECAY, elapsed_days)
 
 
-def exp_knowledge_gain(state, fsrs_params, elapsed_days, new_rating_probs):
+def exp_knowledge_gain(state, fsrs_params, elapsed_days):
     fsrs_params = tuple(fsrs_params) + (0.0, -DECAY)
 
     return exp_knowledge_gain_v6(

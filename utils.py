@@ -61,21 +61,21 @@ def get_decay(card: Card):
     return getattr(card, "decay", 0.5) or 0.5
 
 
-def get_new_rating_probs(deck_id):
-    rows = mw.col.db.all(
-        f"""
-    SELECT r2.ease, COUNT(*) FROM (
-    SELECT r.cid, MIN(r.id) AS first_revlog_id
-    FROM revlog r
-    JOIN cards c ON r.cid = c.id
-    WHERE r.type = 0 AND c.did = {deck_id}
-    GROUP BY r.cid
-    ) AS first_rev
-    JOIN revlog r2 ON r2.id = first_rev.first_revlog_id
-    GROUP BY r2.ease
-    """
-    )
+# def get_new_rating_probs(deck_id):
+#     rows = mw.col.db.all(
+#         f"""
+#     SELECT r2.ease, COUNT(*) FROM (
+#     SELECT r.cid, MIN(r.id) AS first_revlog_id
+#     FROM revlog r
+#     JOIN cards c ON r.cid = c.id
+#     WHERE r.type = 0 AND c.did = {deck_id}
+#     GROUP BY r.cid
+#     ) AS first_rev
+#     JOIN revlog r2 ON r2.id = first_rev.first_revlog_id
+#     GROUP BY r2.ease
+#     """
+#     )
 
-    total = sum(count for _, count in rows)
-    new_card_probs = [(count + 1) / (total + 4) for _ease, count in rows]
-    return new_card_probs
+#     total = sum(count for _, count in rows)
+#     new_card_probs = [(count + 1) / (total + 4) for _ease, count in rows]
+#     return new_card_probs

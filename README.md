@@ -2,7 +2,7 @@
 
 Reorder your Anki queue by **expected knowledge gain** to maximize learning efficiency.
 
-## How it works?
+## How it works
 
 This addon introduces a new review strategy that goes beyond Anki’s built-in options (like "easy cards first" or "descending retrievability"). It prioritizes cards that contribute the most to your long-term memory.
 

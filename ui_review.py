@@ -5,7 +5,7 @@ from aqt import mw
 from .config import get_config
 from .knowledge_gain.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_gain.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .utils import get_last_review_date, get_new_rating_probs
+from .utils import get_last_review_date
 
 config = get_config()
 
@@ -31,14 +31,12 @@ def _on_card_did_render(
     fsrs_params_v6 = deck_config.get("fsrsParams6")
     fsrs_params_v5 = deck_config.get("fsrsWeights")
 
-    new_card_probs = get_new_rating_probs(deck_id)
-
     ekg = None
 
     if isinstance(fsrs_params_v6, list) and len(fsrs_params_v6) == 21:
-        ekg = exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days, new_card_probs)
+        ekg = exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
     elif isinstance(fsrs_params_v5, list) and len(fsrs_params_v5) == 19:
-        ekg = exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days, new_card_probs)
+        ekg = exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
 
     if ekg is None:
         return
