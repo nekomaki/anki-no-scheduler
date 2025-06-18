@@ -1,7 +1,7 @@
 import functools
 import math
 
-from .utils import log_gamma
+from .utils import log_upper_incomplete_gamma
 
 GAMMA = 0.98
 
@@ -13,8 +13,6 @@ FORGET_WORKLOAD = 1
 
 
 def power_forgetting_curve(t, s, decay):
-    if s <= 0:
-        return 0.0
     factor = 0.9 ** (1 / decay) - 1
     return (1 + factor * t / s) ** decay
 
@@ -37,7 +35,7 @@ def knowledge_ema(
     def compute(x0, exponent):
         return math.exp(
             exponent * lgamma
-            + log_gamma(decay + 1, x0)
+            + log_upper_incomplete_gamma(decay + 1, x0)
             - decay * (math.log(alpha) + math.log(lgamma))
         )
 
@@ -234,9 +232,6 @@ def _calc_reviewed_knowledge(state, fsrs_params, elapsed_days):
 
 
 def calc_current_knowledge(state, decay, elapsed_days):
-    if state[1] == 0:
-        return 0.0
-
     return knowledge_ema(state[1], decay=decay, t_begin=elapsed_days)
 
 

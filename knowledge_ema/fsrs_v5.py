@@ -41,5 +41,4 @@ def exp_knowledge_gain(state, fsrs_params, elapsed_days):
         state,
         fsrs_params=fsrs_params,
         elapsed_days=elapsed_days,
-        new_rating_probs=new_rating_probs,
     )

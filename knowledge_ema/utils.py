@@ -1,7 +1,7 @@
 import math
 
 
-def log_gamma(a, x, max_iter=200, tol=1e-14):
+def log_upper_incomplete_gamma(a, x, max_iter=200, tol=1e-14):
     """
     Compute log(Γ(a, x)) for a > 0 and x > 0 using continued fraction (Lentz's method).
     This is the logarithm of the upper incomplete gamma function.

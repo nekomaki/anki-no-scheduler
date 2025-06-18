@@ -5,8 +5,8 @@ from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config import get_config
-from .knowledge_gain.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
-from .knowledge_gain.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
+from .knowledge_ema.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
+from .knowledge_ema.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .utils import get_last_review_date
 
 config = get_config()
