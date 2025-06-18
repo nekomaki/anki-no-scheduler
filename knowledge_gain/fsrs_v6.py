@@ -3,7 +3,7 @@ import math
 
 from .utils import log_gamma
 
-GAMMA = 0.95
+GAMMA = 0.98
 
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500

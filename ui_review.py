@@ -38,13 +38,15 @@ def _on_card_did_render(
     elif isinstance(fsrs_params_v5, list) and len(fsrs_params_v5) == 19:
         ekg = exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
 
-    if ekg is None:
-        return
+    if ekg is not None:
+        ekg_message = f"Expected knowledge gain: {ekg:.3f}"
+    else:
+        ekg_message = "Expected knowledge gain unavailable. Ensure FSRS is enabled and you're not in Custom Study mode."
 
     msg = f"""<br><br>
     <div style="text-align: center;">
         <span id="ekg_status" style="font-size:12px;opacity:0.5;font-family:monospace;">
-            Expected knowledge gain: {ekg:.3f}
+            {ekg_message}
         </span>
     </div>"""
 

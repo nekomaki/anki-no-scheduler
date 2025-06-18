@@ -78,7 +78,6 @@ def _get_next_v3_card_patched(self) -> None:
 
             # Sort the cards by expected knowledge gain
             cache["today"] = mw.col.sched.today
-            cache["new_rating_probs"] = {}
             sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain)
 
             # Filter cards based on the counts

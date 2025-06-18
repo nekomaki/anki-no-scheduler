@@ -8,12 +8,10 @@ addon_identifier = mw.addonManager.addonFromModule(__name__)
 class Config(object):
     def __init__(self):
         self.data = mw.addonManager.getConfig(addon_identifier)
-        if not self.data:
-            self.data = dict()
 
     @property
     def sort_cards(self):
-        return self.data.get("sort_cards", True)
+        return self.data.get("sort_cards")
 
     @sort_cards.setter
     def sort_cards(self, value):
@@ -22,7 +20,7 @@ class Config(object):
 
     @property
     def display_status(self):
-        return self.data.get("display_status", True)
+        return self.data.get("display_status")
 
     @display_status.setter
     def display_status(self, value):

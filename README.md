@@ -14,11 +14,12 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 
 - Reorders **new**, **learning**, and **review** cards within the daily queue
 - Displays **expected knowledge gain** for each card
-- Compatible with FSRS V5 and V6
+- Compatible with FSRS 5 and 6
 
 ## Limitations
 
-- **Undo is not supported**
+- **Undo is not supported.**
+- Custom study is currently not supported.
 - Work in progress, but already functional.
 - This addon currently maximizes expected knowledge gain per single review. However, long-term knowledge is built over multiple reviews. New cards often yield low immediate gain, but their contribution increases significantly after a few successful reviews. For best results, use this addon alongside a well-tuned scheduler (e.g. with an appropriate desired retention setting).
  A full scheduling strategy is under development.
