@@ -60,3 +60,4 @@ where
 
 * $D$ and $F$: decay and factor of the card
 * $\alpha = \text{stability} / \text{F}$
+* $\Gamma$: upper incomplete gamma function

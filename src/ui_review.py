@@ -5,7 +5,11 @@ from aqt import mw
 from .config import get_config
 from .knowledge_ema.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_ema.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .utils import get_last_review_date
+from .utils import (
+    get_last_review_date,
+    is_valid_fsrs5_params,
+    is_valid_fsrs6_params,
+)
 
 config = get_config()
 
@@ -33,9 +37,9 @@ def _on_card_did_render(
 
     ekg = None
 
-    if isinstance(fsrs_params_v6, list) and len(fsrs_params_v6) == 21:
+    if is_valid_fsrs6_params(fsrs_params_v6):
         ekg = exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
-    elif isinstance(fsrs_params_v5, list) and len(fsrs_params_v5) == 19:
+    elif is_valid_fsrs5_params(fsrs_params_v5):
         ekg = exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
 
     if ekg is not None:

@@ -8,7 +8,11 @@ from aqt.utils import tooltip
 from .config import get_config
 from .knowledge_ema.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_ema.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .utils import get_last_review_date
+from .utils import (
+    get_last_review_date,
+    is_valid_fsrs5_params,
+    is_valid_fsrs6_params,
+)
 
 config = get_config()
 
@@ -24,7 +28,7 @@ def _key_exp_knowledge_gain(x):
     state = (
         (float(card.memory_state.difficulty), float(card.memory_state.stability))
         if card.memory_state
-        else (0.0, 0.0)
+        else (1.0, 0.0)
     )
 
     elapsed_days = cache["today"] - get_last_review_date(card)
@@ -33,12 +37,18 @@ def _key_exp_knowledge_gain(x):
     fsrs_params_v6 = deck_config.get("fsrsParams6")
     fsrs_params_v5 = deck_config.get("fsrsWeights")
 
-    if isinstance(fsrs_params_v6, list) and len(fsrs_params_v6) == 21:
+    if is_valid_fsrs6_params(fsrs_params_v6):
         return -exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
-    elif isinstance(fsrs_params_v5, list) and len(fsrs_params_v5) == 19:
+    elif is_valid_fsrs5_params(fsrs_params_v5):
         return -exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
     else:
         return 0
+    # if isinstance(fsrs_params_v6, list) and len(fsrs_params_v6) == 21:
+    #     return -exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
+    # elif isinstance(fsrs_params_v5, list) and len(fsrs_params_v5) == 19:
+    #     return -exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
+    # else:
+    #     return 0
 
 
 def _get_next_v3_card_patched(self) -> None:
@@ -70,7 +80,7 @@ def _get_next_v3_card_patched(self) -> None:
             or mw.col.sched.today != cache.get("today", None)
         ):
             # Refresh the cache
-            tooltip("Refreshing card cache...") # DEBUG
+            # tooltip("Refreshing card cache...")  # DEBUG
             self._deck_id_cached = deck_id
 
             # Fetch all cards
@@ -81,9 +91,7 @@ def _get_next_v3_card_patched(self) -> None:
             self.mw.col.sched.extend_limits(0, -extend_limits)
 
             # Filter out new cards
-            cards = [
-                card for card in output_all.cards if card.queue != QueuedCards.NEW
-            ]
+            cards = [card for card in output_all.cards if card.queue != QueuedCards.NEW]
 
             # Sort the cards by expected knowledge gain
             cache["today"] = mw.col.sched.today
