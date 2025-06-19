@@ -76,9 +76,14 @@ def _get_next_v3_card_patched(self) -> None:
             output_all = self.mw.col.sched.get_queued_cards(fetch_limit=extend_limits)
             self.mw.col.sched.extend_limits(0, -extend_limits)
 
+            # Filter out new cards
+            cards = [
+                card for card in output_all.cards if card.queue != QueuedCards.NEW
+            ]
+
             # Sort the cards by expected knowledge gain
             cache["today"] = mw.col.sched.today
-            sorted_cards = sorted(output_all.cards, key=_key_exp_knowledge_gain)
+            sorted_cards = sorted(cards, key=_key_exp_knowledge_gain)
 
             # Filter cards based on the counts
             filtered_counts = [0, 0, 0]
