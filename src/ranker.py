@@ -3,6 +3,7 @@ from anki.scheduler.v3 import QueuedCards
 from anki.scheduler.v3 import Scheduler as V3Scheduler
 from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
+from aqt.utils import tooltip
 
 from .config import get_config
 from .knowledge_ema.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
@@ -54,6 +55,8 @@ def _get_next_v3_card_patched(self) -> None:
         QueuedCards.REVIEW: 2,
     }
 
+    # TODO: Relearning cards will refresh the cache
+    # TODO: Avoid reviewing cards too soon
     # Skip new cards
     if idx != 0:
         deck_id = self.mw.col.decks.current()['id']
@@ -67,6 +70,7 @@ def _get_next_v3_card_patched(self) -> None:
             or mw.col.sched.today != cache.get("today", None)
         ):
             # Refresh the cache
+            tooltip("Refreshing card cache...") # DEBUG
             self._deck_id_cached = deck_id
 
             # Fetch all cards
