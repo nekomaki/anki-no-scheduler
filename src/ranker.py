@@ -3,7 +3,6 @@ from anki.scheduler.v3 import QueuedCards
 from anki.scheduler.v3 import Scheduler as V3Scheduler
 from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
-from aqt.utils import tooltip
 
 from .config import get_config
 from .knowledge_ema.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
@@ -23,7 +22,7 @@ cache = {}
 
 def _key_exp_knowledge_gain(x):
     card = x.card
-    deck_id = card.deck_id
+    deck_id = card.original_deck_id or card.deck_id
 
     state = (
         (float(card.memory_state.difficulty), float(card.memory_state.stability))
@@ -43,12 +42,6 @@ def _key_exp_knowledge_gain(x):
         return -exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
     else:
         return 0
-    # if isinstance(fsrs_params_v6, list) and len(fsrs_params_v6) == 21:
-    #     return -exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
-    # elif isinstance(fsrs_params_v5, list) and len(fsrs_params_v5) == 19:
-    #     return -exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
-    # else:
-    #     return 0
 
 
 def _get_next_v3_card_patched(self) -> None:
@@ -80,7 +73,6 @@ def _get_next_v3_card_patched(self) -> None:
             or mw.col.sched.today != cache.get("today", None)
         ):
             # Refresh the cache
-            # tooltip("Refreshing card cache...")  # DEBUG
             self._deck_id_cached = deck_id
 
             # Fetch all cards
@@ -101,9 +93,6 @@ def _get_next_v3_card_patched(self) -> None:
             filtered_counts = [0, 0, 0]
             filtered_cards = []
             for card in sorted_cards:
-                if card.queue == QueuedCards.NEW:
-                    continue
-
                 index = queue_to_index[card.queue]
                 if filtered_counts[index] < counts[index]:
                     filtered_cards.append(card)

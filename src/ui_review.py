@@ -7,6 +7,7 @@ from .knowledge_ema.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_ema.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .utils import (
     get_last_review_date,
+    is_valid_fsrs4_params,
     is_valid_fsrs5_params,
     is_valid_fsrs6_params,
 )
@@ -21,7 +22,7 @@ def _on_card_did_render(
         return
 
     card = context.card()
-    deck_id = card.did
+    deck_id = card.odid or card.did
 
     state = (
         (float(card.memory_state.difficulty), float(card.memory_state.stability))
@@ -44,8 +45,10 @@ def _on_card_did_render(
 
     if ekg is not None:
         ekg_message = f"Expected knowledge gain: {ekg:.3f}"
+    elif is_valid_fsrs4_params(fsrs_params_v5):
+        ekg_message = "Expected knowledge gain is not supported for this FSRS version. Please use FSRS 5 or later."
     else:
-        ekg_message = "Expected knowledge gain unavailable. Ensure FSRS is enabled and you're not in Custom Study mode."
+        ekg_message = "Expected knowledge gain unavailable. Ensure FSRS is enabled."
 
     msg = f"""<br><br>
     <div style="text-align: center;">

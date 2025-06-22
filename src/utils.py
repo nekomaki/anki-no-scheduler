@@ -62,15 +62,15 @@ def get_decay(card: Card):
 
 
 def is_valid_fsrs6_params(fsrs_params):
-    return (isinstance(fsrs_params, list) or isinstance(fsrs_params, tuple)) and len(
-        fsrs_params
-    ) == 21
+    return isinstance(fsrs_params, (list, tuple)) and len(fsrs_params) == 21
 
 
 def is_valid_fsrs5_params(fsrs_params):
-    return (isinstance(fsrs_params, list) or isinstance(fsrs_params, tuple)) and len(
-        fsrs_params
-    ) == 19
+    return isinstance(fsrs_params, (list, tuple)) and len(fsrs_params) == 19
+
+
+def is_valid_fsrs4_params(fsrs_params):
+    return isinstance(fsrs_params, (list, tuple)) and len(fsrs_params) == 17
 
 
 # def get_new_rating_probs(deck_id):

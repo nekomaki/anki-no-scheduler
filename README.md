@@ -19,7 +19,6 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 ## Limitations
 
 - **Undo is not supported.**
-- Custom study is currently not supported.
 - Work in progress, but already functional.
 - This addon currently maximizes expected knowledge gain per single review. However, long-term knowledge is built over multiple reviews. New cards often yield low immediate gain, but their contribution increases significantly after a few successful reviews. For best results, use this addon alongside a well-tuned scheduler (e.g. with an appropriate desired retention setting).
  A full scheduling strategy is under development.
@@ -43,21 +42,21 @@ where
 For FSRS 4.5 and 5, there’s a closed-form expression for it:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi A} \cdot \text{erfcx}\left(\sqrt{A - T \log \gamma}\right)
+J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi\alpha\log\gamma} \cdot \text{erfcx}\left(\sqrt{(\alpha-T)\log\gamma}\right)
 $$
 
 where
 
-* $A = -\frac{\text{stability}}{\text{FACTOR}} \log \gamma$
+* $\alpha = -\frac{\text{stability}}{\text{FACTOR}}$
 
 For FSRS 6, the EMA knowledge is given by:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = \gamma^{-\alpha-T} (-\alpha\log\gamma)^{-D} \cdot \Gamma(D+1, -(T + \alpha)\log\gamma)
+J_{\text{EMA}}(\text{card}, T; \gamma) = \gamma^{\alpha-T} (\alpha\log\gamma)^{-D} \cdot \Gamma(D+1, (\alpha - T)\log\gamma)
 $$
 
 where
 
 * $D$ and $F$: decay and factor of the card
-* $\alpha = \text{stability} / \text{F}$
+* $\alpha = -\frac{\text{stability}}{\text{F}}$
 * $\Gamma$: upper incomplete gamma function
