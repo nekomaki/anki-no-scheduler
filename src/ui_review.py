@@ -38,7 +38,10 @@ def _on_card_did_render(
 
     ekg = None
 
-    if is_valid_fsrs6_params(fsrs_params_v6):
+    if state[1] == 0.0:
+        # Skip new cards
+        return
+    elif is_valid_fsrs6_params(fsrs_params_v6):
         ekg = exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
     elif is_valid_fsrs5_params(fsrs_params_v5):
         ekg = exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
