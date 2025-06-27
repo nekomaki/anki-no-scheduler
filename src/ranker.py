@@ -5,10 +5,12 @@ from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config import get_config
-from .knowledge_ema.fsrs_v5 import exp_knowledge_gain as exp_knowledge_gain_v5
-from .knowledge_ema.fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
+from .knowledge_ema.fsrs4 import exp_knowledge_gain as exp_knowledge_gain_v4
+from .knowledge_ema.fsrs5 import exp_knowledge_gain as exp_knowledge_gain_v5
+from .knowledge_ema.fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .utils import (
     get_last_review_date,
+    is_valid_fsrs4_params,
     is_valid_fsrs5_params,
     is_valid_fsrs6_params,
 )
@@ -34,12 +36,14 @@ def _key_exp_knowledge_gain(x):
 
     deck_config = mw.col.decks.config_dict_for_deck_id(deck_id)
     fsrs_params_v6 = deck_config.get("fsrsParams6")
-    fsrs_params_v5 = deck_config.get("fsrsWeights")
+    fsrs_params = deck_config.get("fsrsWeights")
 
     if is_valid_fsrs6_params(fsrs_params_v6):
         return -exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
-    elif is_valid_fsrs5_params(fsrs_params_v5):
-        return -exp_knowledge_gain_v5(state, fsrs_params_v5, elapsed_days)
+    elif is_valid_fsrs5_params(fsrs_params):
+        return -exp_knowledge_gain_v5(state, fsrs_params, elapsed_days)
+    elif is_valid_fsrs4_params(fsrs_params):
+        return -exp_knowledge_gain_v4(state, fsrs_params, elapsed_days)
     else:
         return 0
 

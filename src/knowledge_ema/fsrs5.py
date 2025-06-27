@@ -1,7 +1,7 @@
-from .fsrs_v6 import calc_current_knowledge as compute_current_knowledge_v6
-from .fsrs_v6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .fsrs_v6 import knowledge_ema as knowledge_ema_v6
-from .fsrs_v6 import power_forgetting_curve as power_forgetting_curve_v6
+from .fsrs6 import calc_current_knowledge as compute_current_knowledge_v6
+from .fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
+from .fsrs6 import knowledge_ema as knowledge_ema_v6
+from .fsrs6 import power_forgetting_curve as power_forgetting_curve_v6
 
 GAMMA = 0.98
 
