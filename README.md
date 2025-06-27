@@ -12,7 +12,7 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 
 ## Features
 
-- Reorders **learning**, and **review** cards within the daily queue
+- Reorders **learning** and **review** cards within the daily queue
 - Displays **expected knowledge gain** for each card
 - Compatible with FSRS 5 and 6
 
