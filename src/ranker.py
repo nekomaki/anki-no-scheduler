@@ -86,7 +86,11 @@ def _get_next_v3_card_patched(self) -> None:
             self.mw.col.sched.extend_limits(0, -extend_limits)
 
             # Filter cards based on the queue
-            cards = [card for card in output_all.cards if card.queue in (QueuedCards.LEARNING, QueuedCards.REVIEW)]
+            cards = [
+                card
+                for card in output_all.cards
+                if card.queue in (QueuedCards.LEARNING, QueuedCards.REVIEW)
+            ]
 
             # Sort the cards by expected knowledge gain
             cache["today"] = mw.col.sched.today
@@ -130,6 +134,28 @@ def _on_card_answered(reviewer, card, ease):
         reviewer._cards_cached = None
 
 
+def _on_card_buried(id: int) -> None:
+    reviewer = mw.reviewer
+    if (
+        getattr(reviewer, "_cards_cached", None)
+        and reviewer._cards_cached[-1].card.id == id
+    ):
+        reviewer._cards_cached.pop()
+    else:
+        reviewer._cards_cached = None
+
+
+def _on_card_suspended(id: int) -> None:
+    reviewer = mw.reviewer
+    if (
+        getattr(reviewer, "_cards_cached", None)
+        and reviewer._cards_cached[-1].card.id == id
+    ):
+        reviewer._cards_cached.pop()
+    else:
+        reviewer._cards_cached = None
+
+
 def update_ranker():
     if config.sort_cards:
         Reviewer._get_next_v3_card = _get_next_v3_card_patched
@@ -140,3 +166,5 @@ def update_ranker():
 def init_ranker():
     update_ranker()
     gui_hooks.reviewer_did_answer_card.append(_on_card_answered)
+    gui_hooks.reviewer_will_bury_card.append(_on_card_buried)
+    gui_hooks.reviewer_will_suspend_card.append(_on_card_suspended)
