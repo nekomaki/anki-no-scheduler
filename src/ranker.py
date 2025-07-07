@@ -71,8 +71,7 @@ def _get_next_v3_card_patched(self) -> None:
         deck_id = self.mw.col.decks.current()['id']
 
         if (
-            not hasattr(self, "_cards_cached")
-            or self._cards_cached is None
+            getattr(self, "_cards_cached", None) is None
             or getattr(self, "_deck_id_cached", None) != deck_id
             or sum(counts[1:]) != len(self._cards_cached)
             or counts[queue_to_index[self._cards_cached[-1].queue]] <= 0

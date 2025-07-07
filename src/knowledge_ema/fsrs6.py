@@ -1,10 +1,9 @@
 import functools
 import math
 
+from . import GAMMA
 from .types import State
 from .utils import log_upper_gamma
-
-GAMMA = 0.99
 
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
@@ -53,18 +52,16 @@ def _knowledge_integral(
         return compute(x0, alpha + t_begin)
 
     # Case 3: integral from 0 to t_end
-    elif t_begin is None and t_end is not None:
+    elif t_end is not None:
+        if t_begin is None:
+            t_begin = 0.0
         return _knowledge_integral(
-            stability, decay=decay, factor=factor
-        ) - math.pow(gamma, t_end) * _knowledge_integral(
+            stability, decay=decay, factor=factor, t_begin=t_begin
+        ) - math.pow(gamma, (t_end - t_begin)) * _knowledge_integral(
             stability, decay=decay, factor=factor, t_begin=t_end
         )
     else:
-        return _knowledge_integral(
-            stability, decay=decay, factor=factor, t_end=t_end
-        ) - math.pow(gamma, t_begin) * _knowledge_integral(
-            stability, decay=decay, factor=factor, t_begin=t_begin
-        )
+        raise NotImplementedError
 
 
 @functools.cache
@@ -231,9 +228,7 @@ def _fsrs_simulate(
 
 
 @functools.cache
-def calc_knowledge_cached(
-    stability: float, decay: float, elapsed_days: float
-) -> float:
+def calc_knowledge_cached(stability: float, decay: float, elapsed_days: float) -> float:
     return _knowledge_integral(stability, decay=decay, t_begin=elapsed_days)
 
 

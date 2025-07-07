@@ -1,8 +1,8 @@
 import math
 from math import log, pi, sqrt
 
+from knowledge_ema import GAMMA
 from knowledge_ema.fsrs4 import DECAY, FACTOR
-from knowledge_ema.fsrs6 import GAMMA
 from knowledge_ema.fsrs6 import _knowledge_integral as _knowledge_integral_v6
 
 
@@ -66,10 +66,12 @@ def _knowledge_integral_v4(stability, t_begin=None, t_end=None, gamma=GAMMA):
         return sqrt(pi * A) * erfcx(sqrt(A))
     elif t_end is None and t_begin is not None:
         return sqrt(pi * A) * erfcx(sqrt(A - t_begin * log(gamma)))
-    elif t_begin is None and t_end is not None:
-        return _knowledge_integral_v4(stability) - GAMMA**t_end * _knowledge_integral_v4(
-            stability, t_begin=t_end
-        )
+    elif t_end is not None:
+        if t_begin is None:
+            t_begin = 0.0
+        return _knowledge_integral_v4(stability, t_begin=t_begin) - GAMMA ** (
+            t_end - t_begin
+        ) * _knowledge_integral_v4(stability, t_begin=t_end)
     else:
         raise NotImplementedError
 
@@ -100,7 +102,7 @@ def _knowledge_integral_scipy(
 
     def integrand(t: float) -> float:
         base = 1 + (factor * t / stability)
-        return lgamma * (base**decay) * (gamma**t)
+        return lgamma * (base**decay) * (gamma ** (t - t_begin))
 
     result, _ = quad(integrand, t_begin, t_end)
     return result
@@ -108,26 +110,26 @@ def _knowledge_integral_scipy(
 
 def test_knowledge_integral_fsrs4():
     for stability in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 36500.0]:
-        kema_fsrs4 = _knowledge_integral_v4(stability=stability, gamma=GAMMA)
-        kema_fsrs6 = _knowledge_integral_v6(
-            stability=stability, decay=DECAY, gamma=GAMMA
+        knowledge_fsrs4 = _knowledge_integral_v4(stability=stability, t_begin=30, t_end=365, gamma=GAMMA)
+        knowledge_fsrs6 = _knowledge_integral_v6(
+            stability=stability, decay=DECAY, t_begin=30, t_end=365, gamma=GAMMA
         )
 
         assert math.isclose(
-            kema_fsrs6, kema_fsrs4, rel_tol=1e-9
-        ), f"Knowledge EMA mismatch for stability {stability}: {kema_fsrs6} != {kema_fsrs4}"
+            knowledge_fsrs6, knowledge_fsrs4, rel_tol=1e-9
+        ), f"Knowledge EMA mismatch for stability {stability}: {knowledge_fsrs6} != {knowledge_fsrs4}"
 
 
 def test_knowledge_integral_scipy():
     for decay in [-0.1, -0.5]:
         for stability in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 36500.0]:
-            kema_fsrs6 = _knowledge_integral_v6(
-                stability=stability, decay=decay, t_end=365, gamma=GAMMA
+            knowledge_fsrs6 = _knowledge_integral_v6(
+                stability=stability, decay=decay, t_begin=30, t_end=365, gamma=GAMMA
             )
-            kema_scipy = _knowledge_integral_scipy(
-                stability=stability, decay=decay, t_end=365, gamma=GAMMA
+            knowledge_scipy = _knowledge_integral_scipy(
+                stability=stability, decay=decay, t_begin=30, t_end=365, gamma=GAMMA
             )
 
             assert math.isclose(
-                kema_fsrs6, kema_scipy, rel_tol=1e-9
-            ), f"Knowledge EMA mismatch for stability {stability}: {kema_fsrs6} != {kema_scipy}"
+                knowledge_fsrs6, knowledge_scipy, rel_tol=1e-9
+            ), f"Knowledge EMA mismatch for stability {stability}: {knowledge_fsrs6} != {knowledge_scipy}"
