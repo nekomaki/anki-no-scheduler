@@ -20,7 +20,7 @@ def lower_gamma_series(a: float, x: float, tol=1e-14, max_iter=200) -> float:
     return total * math.exp(-x + a * math.log(x))
 
 
-def log_upper_incomplete_gamma_cf(a: float, x: float, max_iter=200, tol=1e-14) -> float:
+def log_upper_gamma_cf(a: float, x: float, max_iter=200, tol=1e-14) -> float:
     """
     Computes log(Γ(a, x)) using continued fraction (Lentz's method).
     Only used when x >= a + 1.
@@ -53,7 +53,7 @@ def log_upper_incomplete_gamma_cf(a: float, x: float, max_iter=200, tol=1e-14) -
     return log_Q + math.lgamma(a)
 
 
-def log_upper_incomplete_gamma(a: float, x: float) -> float:
+def log_upper_gamma(a: float, x: float) -> float:
     """
     Computes log(Γ(a, x)) for a > 0 and x > 0.
     Automatically chooses between series and continued fraction based on x.
@@ -70,4 +70,4 @@ def log_upper_incomplete_gamma(a: float, x: float) -> float:
             return float('-inf')
         return math.log(Q) + math.lgamma(a)
     else:
-        return log_upper_incomplete_gamma_cf(a, x)
+        return log_upper_gamma_cf(a, x)

@@ -3,8 +3,7 @@ from math import log, pi, sqrt
 
 from knowledge_ema.fsrs4 import DECAY, FACTOR
 from knowledge_ema.fsrs6 import GAMMA
-from knowledge_ema.fsrs6 import knowledge_ema as knowledge_ema_v6
-from knowledge_ema.types import State
+from knowledge_ema.fsrs6 import _knowledge_integral as _knowledge_integral_v6
 
 
 def erfcx(x):
@@ -59,7 +58,7 @@ def erfcx(x):
     return d / (1.0 + 2.0 * x)
 
 
-def knowledge_ema_v4(stability, t_begin=None, t_end=None, gamma=GAMMA):
+def _knowledge_integral_v4(stability, t_begin=None, t_end=None, gamma=GAMMA):
     # g\left(x\right)=\left(1+\frac{Fx}{s}\right)^{D}r^{x}
     # -\left(\ln r\right)\int_{0}^{\infty}g\left(x\right)dx
     A = -stability / FACTOR * log(gamma)
@@ -68,14 +67,14 @@ def knowledge_ema_v4(stability, t_begin=None, t_end=None, gamma=GAMMA):
     elif t_end is None and t_begin is not None:
         return sqrt(pi * A) * erfcx(sqrt(A - t_begin * log(gamma)))
     elif t_begin is None and t_end is not None:
-        return knowledge_ema_v4(stability) - GAMMA**t_end * knowledge_ema_v4(
+        return _knowledge_integral_v4(stability) - GAMMA**t_end * _knowledge_integral_v4(
             stability, t_begin=t_end
         )
     else:
         raise NotImplementedError
 
 
-def knowledge_ema_scipy(
+def _knowledge_integral_scipy(
     stability: float,
     decay: float,
     factor: float | None = None,
@@ -97,7 +96,7 @@ def knowledge_ema_scipy(
     if t_begin is None:
         t_begin = 0.0
     if t_end is None:
-        assert False, "t_end must be specified for scipy integration"
+        t_end = math.inf
 
     def integrand(t: float) -> float:
         base = 1 + (factor * t / stability)
@@ -107,10 +106,10 @@ def knowledge_ema_scipy(
     return result
 
 
-def test_knowledge_ema_fsrs4():
-    for stability in [0.1, 1.0, 10.0, 100.0, 1000.0]:
-        kema_fsrs4 = knowledge_ema_v4(stability=stability, gamma=GAMMA)
-        kema_fsrs6 = knowledge_ema_v6(
+def test_knowledge_integral_fsrs4():
+    for stability in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 36500.0]:
+        kema_fsrs4 = _knowledge_integral_v4(stability=stability, gamma=GAMMA)
+        kema_fsrs6 = _knowledge_integral_v6(
             stability=stability, decay=DECAY, gamma=GAMMA
         )
 
@@ -119,13 +118,13 @@ def test_knowledge_ema_fsrs4():
         ), f"Knowledge EMA mismatch for stability {stability}: {kema_fsrs6} != {kema_fsrs4}"
 
 
-def test_knowledge_ema_scipy():
+def test_knowledge_integral_scipy():
     for decay in [-0.1, -0.5]:
-        for stability in [0.1, 1.0, 10.0, 100.0, 1000.0]:
-            kema_fsrs6 = knowledge_ema_v6(
+        for stability in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 36500.0]:
+            kema_fsrs6 = _knowledge_integral_v6(
                 stability=stability, decay=decay, t_end=365, gamma=GAMMA
             )
-            kema_scipy = knowledge_ema_scipy(
+            kema_scipy = _knowledge_integral_scipy(
                 stability=stability, decay=decay, t_end=365, gamma=GAMMA
             )
 

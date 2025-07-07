@@ -27,9 +27,11 @@ def _key_exp_knowledge_gain(x):
     card = x.card
     deck_id = card.original_deck_id or card.deck_id
 
-    state = State(
-        float(card.memory_state.difficulty), float(card.memory_state.stability)
-    ) if card.memory_state else State(1.0, 0.0)
+    state = (
+        State(float(card.memory_state.difficulty), float(card.memory_state.stability))
+        if card.memory_state
+        else State(1.0, 0.0)
+    )
 
     elapsed_days = cache["today"] - get_last_review_date(card)
 
@@ -65,7 +67,7 @@ def _get_next_v3_card_patched(self) -> None:
 
     # TODO: Relearning cards will refresh the cache
     # TODO: Avoid reviewing cards too soon
-    if idx in (QueuedCards.NEW, QueuedCards.LEARNING, QueuedCards.REVIEW):
+    if idx in (QueuedCards.LEARNING, QueuedCards.REVIEW):
         deck_id = self.mw.col.decks.current()['id']
 
         if (
@@ -90,8 +92,7 @@ def _get_next_v3_card_patched(self) -> None:
             cards = [
                 card
                 for card in output_all.cards
-                if card.queue
-                in (QueuedCards.NEW, QueuedCards.LEARNING, QueuedCards.REVIEW)
+                if card.queue in (QueuedCards.LEARNING, QueuedCards.REVIEW)
             ]
 
             # Sort the cards by expected knowledge gain

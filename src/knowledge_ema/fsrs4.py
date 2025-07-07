@@ -1,8 +1,7 @@
 import functools
 import math
 
-from .fsrs6 import GAMMA
-from .fsrs6 import knowledge_ema as knowledge_ema_v6
+from .fsrs6 import calc_knowledge as calc_knowledge_v6
 from .types import State
 
 D_MIN, D_MAX = 1, 10
@@ -17,22 +16,6 @@ FACTOR = 0.9 ** (1 / DECAY) - 1
 
 def power_forgetting_curve(t: float, s: float) -> float:
     return (1 + FACTOR * t / s) ** DECAY
-
-
-def knowledge_ema(
-    stability: float,
-    t_begin: float | None = None,
-    t_end: float | None = None,
-    gamma: float = GAMMA,
-) -> float:
-    return knowledge_ema_v6(
-        stability,
-        decay=DECAY,
-        factor=FACTOR,
-        t_begin=t_begin,
-        t_end=t_end,
-        gamma=gamma,
-    )
 
 
 @functools.cache
@@ -98,24 +81,25 @@ def _fsrs_simulate(
     return _fsrs_simulate_wrapper(fsrs_params)(state, t_review, retention)
 
 
+def calc_knowledge(state: State, elapsed_days: float) -> float:
+    return calc_knowledge_v6(state, DECAY, elapsed_days)
+
+
 def _calc_reviewed_knowledge(
     state: State, fsrs_params: tuple, elapsed_days: float
 ) -> float:
     next_states = _fsrs_simulate(state, fsrs_params, elapsed_days)
 
     knowledge = sum(
-        prob * knowledge_ema(new_state.stability) for prob, new_state, _ in next_states
+        prob * calc_knowledge(new_state, elapsed_days=0)
+        for prob, new_state, _ in next_states
     )
 
     return knowledge
 
 
-def calc_current_knowledge(state: State, elapsed_days: float) -> float:
-    return knowledge_ema(state.stability, t_begin=elapsed_days)
-
-
 def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) -> float:
-    current_knowledge = calc_current_knowledge(state, elapsed_days=elapsed_days)
+    current_knowledge = calc_knowledge(state, elapsed_days=elapsed_days)
     reviewed_knowledge = _calc_reviewed_knowledge(
         state, fsrs_params=fsrs_params, elapsed_days=elapsed_days
     )

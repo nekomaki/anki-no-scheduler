@@ -2,7 +2,7 @@ import functools
 import math
 
 from .types import State
-from .utils import log_upper_incomplete_gamma
+from .utils import log_upper_gamma
 
 GAMMA = 0.99
 
@@ -15,10 +15,10 @@ FORGET_WORKLOAD = 1
 
 def power_forgetting_curve(t: float, s: float, decay: float) -> float:
     factor = math.pow(0.9, 1 / decay) - 1
-    return (1 + factor * t / s) ** decay
+    return math.pow(1 + factor * t / s, decay)
 
 
-def knowledge_ema(
+def _knowledge_integral(
     stability: float,
     decay: float,
     factor: float | None = None,
@@ -38,7 +38,7 @@ def knowledge_ema(
     def compute(x0, exponent):
         return math.exp(
             exponent * lgamma
-            + log_upper_incomplete_gamma(decay + 1, x0)
+            + log_upper_gamma(decay + 1, x0)
             - decay * (math.log(alpha) + math.log(lgamma))
         )
 
@@ -54,15 +54,15 @@ def knowledge_ema(
 
     # Case 3: integral from 0 to t_end
     elif t_begin is None and t_end is not None:
-        return knowledge_ema(
+        return _knowledge_integral(
             stability, decay=decay, factor=factor
-        ) - gamma**t_end * knowledge_ema(
+        ) - math.pow(gamma, t_end) * _knowledge_integral(
             stability, decay=decay, factor=factor, t_begin=t_end
         )
     else:
-        return knowledge_ema(
+        return _knowledge_integral(
             stability, decay=decay, factor=factor, t_end=t_end
-        ) - gamma**t_begin * knowledge_ema(
+        ) - math.pow(gamma, t_begin) * _knowledge_integral(
             stability, decay=decay, factor=factor, t_begin=t_begin
         )
 
@@ -72,7 +72,7 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
     w = fsrs_params
 
     @functools.lru_cache(maxsize=20000)
-    def fsrs_simulate_cached(
+    def _fsrs_simulate_cached(
         state: State, t_review: float, retention: float | None = None
     ):
         (D, S), R = state, retention
@@ -128,7 +128,7 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
 
         return res
 
-    return fsrs_simulate_cached
+    return _fsrs_simulate_cached
 
 
 def _fsrs_simulate(
@@ -230,29 +230,34 @@ def _fsrs_simulate(
 #     return knowledge
 
 
+@functools.cache
+def calc_knowledge_cached(
+    stability: float, decay: float, elapsed_days: float
+) -> float:
+    return _knowledge_integral(stability, decay=decay, t_begin=elapsed_days)
+
+
+def calc_knowledge(state: State, decay: float, elapsed_days: float) -> float:
+    return calc_knowledge_cached(
+        state.stability, decay=decay, elapsed_days=elapsed_days
+    )
+
+
 def _calc_reviewed_knowledge(state: State, fsrs_params: tuple, elapsed_days: float):
     decay = -fsrs_params[20]
 
     next_states = _fsrs_simulate(state, fsrs_params, elapsed_days)
 
     knowledge = sum(
-        prob * knowledge_ema(new_state.stability, decay=decay)
+        prob * calc_knowledge(new_state, decay=decay, elapsed_days=0)
         for prob, new_state, _ in next_states
     )
-    for prob, new_state, _ in next_states:
-        print(prob, new_state, knowledge_ema(new_state.stability, decay=decay))
 
     return knowledge
 
 
-def calc_current_knowledge(state: State, decay: float, elapsed_days: float) -> float:
-    return knowledge_ema(
-        state.stability, decay=decay, t_begin=elapsed_days
-    )  # * GAMMA ** elapsed_days
-
-
 def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) -> float:
-    current_knowledge = calc_current_knowledge(
+    current_knowledge = calc_knowledge(
         state, decay=-fsrs_params[20], elapsed_days=elapsed_days
     )
     reviewed_knowledge = _calc_reviewed_knowledge(
@@ -263,7 +268,7 @@ def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) ->
 
 
 if __name__ == "__main__":
-    state = State(10.0, 0.01)
+    state = State(10.0, 1)
     fsrs_params = (
         1.0191,
         8.2268,
@@ -287,7 +292,7 @@ if __name__ == "__main__":
         0.1150,
         0.1000,
     )
-    elapsed_days = 10
+    elapsed_days = 0
 
     knowledge_gain = exp_knowledge_gain(state, fsrs_params, elapsed_days)
     print(f"Expected knowledge gain: {knowledge_gain:.3f}")
