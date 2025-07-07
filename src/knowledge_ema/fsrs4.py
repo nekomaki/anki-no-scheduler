@@ -1,9 +1,9 @@
 import functools
 import math
 
+from .fsrs6 import GAMMA
 from .fsrs6 import knowledge_ema as knowledge_ema_v6
-
-GAMMA = 0.98
+from .types import State
 
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
@@ -15,15 +15,20 @@ DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
 
 
-def power_forgetting_curve(t, s):
+def power_forgetting_curve(t: float, s: float) -> float:
     return (1 + FACTOR * t / s) ** DECAY
 
 
-def knowledge_ema(stability, t_begin=None, t_end=None, gamma=GAMMA):
+def knowledge_ema(
+    stability: float,
+    t_begin: float | None = None,
+    t_end: float | None = None,
+    gamma: float = GAMMA,
+) -> float:
     return knowledge_ema_v6(
         stability,
-        factor=FACTOR,
         decay=DECAY,
+        factor=FACTOR,
         t_begin=t_begin,
         t_end=t_end,
         gamma=gamma,
@@ -31,11 +36,13 @@ def knowledge_ema(stability, t_begin=None, t_end=None, gamma=GAMMA):
 
 
 @functools.cache
-def _fsrs_simulate_wrapper(fsrs_params):
+def _fsrs_simulate_wrapper(fsrs_params: tuple):
     w = fsrs_params
 
     @functools.lru_cache(maxsize=20000)
-    def fsrs_simulate_cached(state, t_review, retention=None):
+    def fsrs_simulate_cached(
+        state: State, t_review: float, retention: float | None = None
+    ):
         (D, S), R = state, retention
 
         if R is None:
@@ -75,35 +82,39 @@ def _fsrs_simulate_wrapper(fsrs_params):
             new_difficulty = min(D_MAX, max(D_MIN, new_difficulty))
             new_stability = min(S_MAX, max(S_MIN, new_stability))
 
-            res.append((prob, (new_difficulty, new_stability), workload))
+            res.append((prob, State(new_difficulty, new_stability), workload))
 
         return res
 
     return fsrs_simulate_cached
 
 
-def _fsrs_simulate(state, fsrs_params, t_review, retention=None):
+def _fsrs_simulate(
+    state: State, fsrs_params: tuple, t_review: float, retention: float | None = None
+):
     if isinstance(fsrs_params, list):
         fsrs_params = tuple(fsrs_params)
 
     return _fsrs_simulate_wrapper(fsrs_params)(state, t_review, retention)
 
 
-def _calc_reviewed_knowledge(state, fsrs_params, elapsed_days):
+def _calc_reviewed_knowledge(
+    state: State, fsrs_params: tuple, elapsed_days: float
+) -> float:
     next_states = _fsrs_simulate(state, fsrs_params, elapsed_days)
 
     knowledge = sum(
-        prob * knowledge_ema(new_state[1]) for prob, new_state, _ in next_states
+        prob * knowledge_ema(new_state.stability) for prob, new_state, _ in next_states
     )
 
     return knowledge
 
 
-def calc_current_knowledge(state, elapsed_days):
-    return knowledge_ema(state[1], t_begin=elapsed_days)
+def calc_current_knowledge(state: State, elapsed_days: float) -> float:
+    return knowledge_ema(state.stability, t_begin=elapsed_days)
 
 
-def exp_knowledge_gain(state, fsrs_params, elapsed_days):
+def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) -> float:
     current_knowledge = calc_current_knowledge(state, elapsed_days=elapsed_days)
     reviewed_knowledge = _calc_reviewed_knowledge(
         state, fsrs_params=fsrs_params, elapsed_days=elapsed_days
@@ -113,8 +124,8 @@ def exp_knowledge_gain(state, fsrs_params, elapsed_days):
 
 
 if __name__ == "__main__":
-    state = (1.0, 1.0)
-    fsrs_params = [
+    state = State(1.0, 1.0)
+    fsrs_params = (
         1.0191,
         8.2268,
         17.8704,
@@ -132,7 +143,7 @@ if __name__ == "__main__":
         2.2431,
         0.4258,
         3.1303,
-    ]
+    )
     elapsed_days = 10
 
     knowledge_gain = exp_knowledge_gain(state, fsrs_params, elapsed_days)

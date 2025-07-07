@@ -6,6 +6,7 @@ from .config import get_config
 from .knowledge_ema.fsrs4 import exp_knowledge_gain as exp_knowledge_gain_v4
 from .knowledge_ema.fsrs5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_ema.fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
+from .knowledge_ema.types import State
 from .utils import (
     get_last_review_date,
     is_valid_fsrs4_params,
@@ -29,8 +30,8 @@ def _on_card_did_render(
     if not card.memory_state:
         return
 
-    state = (
-        (float(card.memory_state.difficulty), float(card.memory_state.stability))
+    state = State(
+        float(card.memory_state.difficulty), float(card.memory_state.stability)
     )
 
     elapsed_days = mw.col.sched.today - get_last_review_date(card)
@@ -50,9 +51,13 @@ def _on_card_did_render(
     if ekg is not None:
         ekg_message = f"Expected knowledge gain: {ekg:.3f}"
     elif fsrs_params is not None or fsrs_params_v6 is not None:
-        ekg_message = "Expected knowledge gain is not supported for this FSRS version. Please delete and update your FSRS parameters."
+        ekg_message = (
+            "Expected knowledge gain is not supported for this FSRS version. Please delete and update your FSRS parameters."
+        )
     else:
-        ekg_message = "Expected knowledge gain unavailable. Please ensure FSRS is enabled."
+        ekg_message = (
+            "Expected knowledge gain unavailable. Please ensure FSRS is enabled."
+        )
 
     msg = f"""<br><br>
     <div style="text-align: center;">

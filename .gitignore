@@ -2,3 +2,5 @@
 __pycache__/
 src/meta.json
 *.ankiaddon
+.pytest_cache/
+dist/

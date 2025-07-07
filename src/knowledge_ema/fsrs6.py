@@ -1,9 +1,10 @@
 import functools
 import math
 
+from .types import State
 from .utils import log_upper_incomplete_gamma
 
-GAMMA = 0.98
+GAMMA = 0.99
 
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
@@ -12,22 +13,24 @@ NEW_WORKLOAD = 1
 FORGET_WORKLOAD = 1
 
 
-def power_forgetting_curve(t, s, decay):
-    factor = 0.9 ** (1 / decay) - 1
+def power_forgetting_curve(t: float, s: float, decay: float) -> float:
+    factor = math.pow(0.9, 1 / decay) - 1
     return (1 + factor * t / s) ** decay
 
 
 def knowledge_ema(
-    stability, factor=None, decay=None, t_begin=None, t_end=None, gamma=GAMMA
+    stability: float,
+    decay: float,
+    factor: float | None = None,
+    t_begin: float | None = None,
+    t_end: float | None = None,
+    gamma: float = GAMMA,
 ):
     if stability == 0:
         return 0.0
-    if factor is None and decay is None:
-        raise ValueError("Either factor or decay must be provided")
-    elif factor is None and decay is not None:
-        factor = 0.9 ** (1 / decay) - 1
-    elif decay is None and factor is not None:
-        decay = math.log(0.9) / math.log(factor + 1)
+
+    if factor is None:
+        factor = math.pow(0.9, 1 / decay) - 1
 
     alpha = stability / factor
     lgamma = -math.log(gamma)
@@ -51,19 +54,27 @@ def knowledge_ema(
 
     # Case 3: integral from 0 to t_end
     elif t_begin is None and t_end is not None:
-        return knowledge_ema(stability, factor) - gamma**t_end * knowledge_ema(
-            stability, factor, t_begin=t_end
+        return knowledge_ema(
+            stability, decay=decay, factor=factor
+        ) - gamma**t_end * knowledge_ema(
+            stability, decay=decay, factor=factor, t_begin=t_end
         )
     else:
-        raise NotImplementedError
+        return knowledge_ema(
+            stability, decay=decay, factor=factor, t_end=t_end
+        ) - gamma**t_begin * knowledge_ema(
+            stability, decay=decay, factor=factor, t_begin=t_begin
+        )
 
 
 @functools.cache
-def _fsrs_simulate_wrapper(fsrs_params):
+def _fsrs_simulate_wrapper(fsrs_params: tuple):
     w = fsrs_params
 
     @functools.lru_cache(maxsize=20000)
-    def fsrs_simulate_cached(state, t_review, retention=None):
+    def fsrs_simulate_cached(
+        state: State, t_review: float, retention: float | None = None
+    ):
         (D, S), R = state, retention
 
         if R is None:
@@ -113,14 +124,16 @@ def _fsrs_simulate_wrapper(fsrs_params):
             # new_difficulty = D
             new_stability = min(S_MAX, max(S_MIN, new_stability))
 
-            res.append((prob, (new_difficulty, new_stability), workload))
+            res.append((prob, State(new_difficulty, new_stability), workload))
 
         return res
 
     return fsrs_simulate_cached
 
 
-def _fsrs_simulate(state, fsrs_params, t_review, retention=None):
+def _fsrs_simulate(
+    state: State, fsrs_params: tuple, t_review: float, retention: float | None = None
+):
     if isinstance(fsrs_params, list):
         fsrs_params = tuple(fsrs_params)
 
@@ -217,30 +230,28 @@ def _fsrs_simulate(state, fsrs_params, t_review, retention=None):
 #     return knowledge
 
 
-def _calc_reviewed_knowledge(state, fsrs_params, elapsed_days):
+def _calc_reviewed_knowledge(state: State, fsrs_params: tuple, elapsed_days: float):
     decay = -fsrs_params[20]
-    factor = 0.9 ** (1 / decay) - 1
 
     next_states = _fsrs_simulate(state, fsrs_params, elapsed_days)
 
     knowledge = sum(
-        prob * knowledge_ema(new_state[1], factor=factor, decay=decay)
+        prob * knowledge_ema(new_state.stability, decay=decay)
         for prob, new_state, _ in next_states
     )
+    for prob, new_state, _ in next_states:
+        print(prob, new_state, knowledge_ema(new_state.stability, decay=decay))
 
     return knowledge
 
 
-def calc_current_knowledge(state, decay, elapsed_days):
-    return knowledge_ema(state[1], decay=decay, t_begin=elapsed_days)
+def calc_current_knowledge(state: State, decay: float, elapsed_days: float) -> float:
+    return knowledge_ema(
+        state.stability, decay=decay, t_begin=elapsed_days
+    )  # * GAMMA ** elapsed_days
 
 
-def exp_knowledge_gain(state, fsrs_params, elapsed_days):
-    # if state[1] == 0:
-    #     return _calc_new_knowledge(
-    #         state, fsrs_params, elapsed_days, new_rating_probs
-    #     )
-
+def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) -> float:
     current_knowledge = calc_current_knowledge(
         state, decay=-fsrs_params[20], elapsed_days=elapsed_days
     )
@@ -252,8 +263,8 @@ def exp_knowledge_gain(state, fsrs_params, elapsed_days):
 
 
 if __name__ == "__main__":
-    state = (1.0, 1)
-    fsrs_params = [
+    state = State(10.0, 0.01)
+    fsrs_params = (
         1.0191,
         8.2268,
         17.8704,
@@ -275,7 +286,7 @@ if __name__ == "__main__":
         0.2470,
         0.1150,
         0.1000,
-    ]
+    )
     elapsed_days = 10
 
     knowledge_gain = exp_knowledge_gain(state, fsrs_params, elapsed_days)
