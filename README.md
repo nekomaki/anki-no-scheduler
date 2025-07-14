@@ -19,9 +19,14 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 ## Limitations
 
 - **Undo is not supported.**
-- Work in progress, but already functional.
 - This addon currently maximizes expected knowledge gain per single review. However, long-term knowledge is built over multiple reviews. New cards often yield low immediate gain, but their contribution increases significantly after a few successful reviews. For best results, use this addon alongside a well-tuned scheduler (e.g. with an appropriate desired retention setting).
- A full scheduling strategy is under development.
+
+## Installation
+
+1. Install the addon from [AnkiWeb](https://ankiweb.net/shared/info/215758055).
+2. Open Anki and go to **Tools > Add-ons**.
+3. Click on **Get Add-ons** and enter the code `215758055`.
+4. Restart Anki to activate the addon.
 
 ---
 
@@ -35,9 +40,9 @@ $$
 
 where
 
-* $T$: time since the last review
-* $R(\text{card}, T)$: retrievability of the card
-* $\gamma$: exponential decay factor, typically around 0.99
+- $T$: time since the last review
+- $R(\text{card}, T)$: retrievability of the card
+- $\gamma$: exponential decay factor, typically around 0.99
 
 For FSRS 4.5 and 5, there’s a closed-form expression for it:
 
@@ -47,7 +52,7 @@ $$
 
 where
 
-* $\alpha = -\frac{\text{stability}}{\text{FACTOR}}$
+- $\alpha = -\frac{\text{stability}}{\text{FACTOR}}$
 
 For FSRS 6, the EMA knowledge is given by:
 
@@ -57,6 +62,6 @@ $$
 
 where
 
-* $D$ and $F$: decay and factor of the card
-* $\alpha = -\frac{\text{stability}}{\text{F}}$
-* $\Gamma$: upper incomplete gamma function
+- $D$ and $F$: decay and factor of the card
+- $\alpha = -\frac{\text{stability}}{\text{F}}$
+- $\Gamma$: upper incomplete gamma function
