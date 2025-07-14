@@ -4,11 +4,11 @@ from anki.scheduler.v3 import Scheduler as V3Scheduler
 from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
 
-from .config import get_config
+from .config_manager import get_config
+from .fsrs_utils.types import State
 from .knowledge_ema.fsrs4 import exp_knowledge_gain as exp_knowledge_gain_v4
 from .knowledge_ema.fsrs5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_ema.fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .knowledge_ema.types import State
 from .utils import (
     get_last_review_date,
     is_valid_fsrs4_params,
@@ -22,15 +22,22 @@ _get_next_v3_card_original = Reviewer._get_next_v3_card
 
 cache = {}
 
+queue_to_index = {
+    QueuedCards.NEW: 0,
+    QueuedCards.LEARNING: 1,
+    QueuedCards.REVIEW: 2,
+}
+
 
 def _key_exp_knowledge_gain(x):
     card = x.card
     deck_id = card.original_deck_id or card.deck_id
 
-    state = (
-        State(float(card.memory_state.difficulty), float(card.memory_state.stability))
-        if card.memory_state
-        else State(1.0, 0.0)
+    if not card.memory_state:
+        return 0
+
+    state = State(
+        float(card.memory_state.difficulty), float(card.memory_state.stability)
     )
 
     elapsed_days = cache["today"] - get_last_review_date(card)
@@ -39,19 +46,21 @@ def _key_exp_knowledge_gain(x):
     fsrs_params_v6 = deck_config.get("fsrsParams6")
     fsrs_params = deck_config.get("fsrsWeights")
 
-    if state.stability == 0.0:
-        return 0
-    elif is_valid_fsrs6_params(fsrs_params_v6):
-        return -exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
+    if is_valid_fsrs6_params(fsrs_params_v6):
+        return -exp_knowledge_gain_v6(state, tuple(fsrs_params_v6), elapsed_days)
     elif is_valid_fsrs5_params(fsrs_params):
-        return -exp_knowledge_gain_v5(state, fsrs_params, elapsed_days)
+        return -exp_knowledge_gain_v5(state, tuple(fsrs_params), elapsed_days)
     elif is_valid_fsrs4_params(fsrs_params):
-        return -exp_knowledge_gain_v4(state, fsrs_params, elapsed_days)
+        return -exp_knowledge_gain_v4(state, tuple(fsrs_params), elapsed_days)
     else:
         return 0
 
 
 def _get_next_v3_card_patched(self) -> None:
+    """
+    A patched version of Reviewer._get_next_v3_card.
+    https://github.com/ankitects/anki/blob/208729fa3e3ecb261c359c9a75e83291e80b499d/qt/aqt/reviewer.py#L264
+    """
     assert isinstance(self.mw.col.sched, V3Scheduler)
     output = self.mw.col.sched.get_queued_cards()
     if not output.cards:
@@ -59,11 +68,6 @@ def _get_next_v3_card_patched(self) -> None:
     self._v3 = V3CardInfo.from_queue(output)
 
     idx, counts = self._v3.counts()
-    queue_to_index = {
-        QueuedCards.NEW: 0,
-        QueuedCards.LEARNING: 1,
-        QueuedCards.REVIEW: 2,
-    }
 
     # TODO: Relearning cards will refresh the cache
     # TODO: Avoid reviewing cards too soon
@@ -158,15 +162,15 @@ def _on_card_suspended(id: int) -> None:
         reviewer._cards_cached = None
 
 
-def update_ranker():
-    if config.sort_cards:
+def update_reordering():
+    if config.reorder_cards:
         Reviewer._get_next_v3_card = _get_next_v3_card_patched
     else:
         Reviewer._get_next_v3_card = _get_next_v3_card_original
 
 
-def init_ranker():
-    update_ranker()
+def init_reordering():
+    update_reordering()
     gui_hooks.reviewer_did_answer_card.append(_on_card_answered)
     gui_hooks.reviewer_will_bury_card.append(_on_card_buried)
     gui_hooks.reviewer_will_suspend_card.append(_on_card_suspended)

@@ -2,11 +2,11 @@ from anki import hooks
 from anki.template import TemplateRenderContext, TemplateRenderOutput
 from aqt import mw
 
-from .config import get_config
+from .config_manager import get_config
+from .fsrs_utils.types import State
 from .knowledge_ema.fsrs4 import exp_knowledge_gain as exp_knowledge_gain_v4
 from .knowledge_ema.fsrs5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_ema.fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .knowledge_ema.types import State
 from .utils import (
     get_last_review_date,
     is_valid_fsrs4_params,
@@ -42,18 +42,16 @@ def _on_card_did_render(
 
     ekg = None
     if is_valid_fsrs6_params(fsrs_params_v6):
-        ekg = exp_knowledge_gain_v6(state, fsrs_params_v6, elapsed_days)
+        ekg = exp_knowledge_gain_v6(state, tuple(fsrs_params_v6), elapsed_days)
     elif is_valid_fsrs5_params(fsrs_params):
-        ekg = exp_knowledge_gain_v5(state, fsrs_params, elapsed_days)
+        ekg = exp_knowledge_gain_v5(state, tuple(fsrs_params), elapsed_days)
     elif is_valid_fsrs4_params(fsrs_params):
-        ekg = exp_knowledge_gain_v4(state, fsrs_params, elapsed_days)
+        ekg = exp_knowledge_gain_v4(state, tuple(fsrs_params), elapsed_days)
 
     if ekg is not None:
         ekg_message = f"Expected knowledge gain: {ekg:.3f}"
     elif fsrs_params is not None or fsrs_params_v6 is not None:
-        ekg_message = (
-            "Expected knowledge gain is not supported for this FSRS version. Please delete and update your FSRS parameters."
-        )
+        ekg_message = "Expected knowledge gain is not supported for this FSRS version. Please delete and update your FSRS parameters."
     else:
         ekg_message = (
             "Expected knowledge gain unavailable. Please ensure FSRS is enabled."

@@ -1,8 +1,8 @@
 import math
 from math import log, pi, sqrt
 
+from fsrs_utils.fsrs4 import DECAY, FACTOR
 from knowledge_ema import GAMMA
-from knowledge_ema.fsrs4 import DECAY, FACTOR
 from knowledge_ema.fsrs6 import _knowledge_integral as _knowledge_integral_v6
 
 
@@ -110,7 +110,9 @@ def _knowledge_integral_scipy(
 
 def test_knowledge_integral_fsrs4():
     for stability in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 36500.0]:
-        knowledge_fsrs4 = _knowledge_integral_v4(stability=stability, t_begin=30, t_end=365, gamma=GAMMA)
+        knowledge_fsrs4 = _knowledge_integral_v4(
+            stability=stability, t_begin=30, t_end=365, gamma=GAMMA
+        )
         knowledge_fsrs6 = _knowledge_integral_v6(
             stability=stability, decay=DECAY, t_begin=30, t_end=365, gamma=GAMMA
         )

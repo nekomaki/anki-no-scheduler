@@ -10,12 +10,12 @@ class Config(object):
         self.data = mw.addonManager.getConfig(addon_identifier)
 
     @property
-    def sort_cards(self):
-        return self.data.get("sort_cards")
+    def reorder_cards(self):
+        return self.data.get("reorder_cards")
 
-    @sort_cards.setter
-    def sort_cards(self, value):
-        self.data["sort_cards"] = value
+    @reorder_cards.setter
+    def reorder_cards(self, value):
+        self.data["reorder_cards"] = value
         self.save()
 
     @property

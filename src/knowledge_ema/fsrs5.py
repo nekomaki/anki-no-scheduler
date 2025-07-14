@@ -1,20 +1,12 @@
+try:
+    from ..fsrs_utils.fsrs5 import DECAY
+    from ..fsrs_utils.types import State
+except ImportError:
+    from fsrs_utils.fsrs5 import DECAY
+    from fsrs_utils.types import State
+
 from .fsrs6 import calc_knowledge as calc_knowledge_v6
 from .fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .fsrs6 import power_forgetting_curve as power_forgetting_curve_v6
-from .types import State
-
-D_MIN, D_MAX = 1, 10
-S_MIN, S_MAX = 0.01, 36500
-
-NEW_WORKLOAD = 1
-FORGET_WORKLOAD = 1
-
-DECAY = -0.5
-FACTOR = 0.9 ** (1 / DECAY) - 1
-
-
-def power_forgetting_curve(t: float, s: float) -> float:
-    return power_forgetting_curve_v6(t, s, DECAY)
 
 
 def calc_knowledge(state: State, elapsed_days: float) -> float:
