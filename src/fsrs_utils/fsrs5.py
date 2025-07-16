@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .fsrs6 import fsrs_simulate as fsrs_simulate_v6
 from .fsrs6 import power_forgetting_curve as power_forgetting_curve_v6
 from .types import State
@@ -17,7 +19,7 @@ def power_forgetting_curve(t: float, s: float) -> float:
 
 
 def fsrs_simulate(
-    state: State, fsrs_params: tuple, t_review: float, retention: float | None = None
+    state: State, fsrs_params: tuple, t_review: float, retention: Optional[float] = None
 ):
     fsrs_params = tuple(fsrs_params) + (0, -DECAY)
     return fsrs_simulate_v6(state, fsrs_params, t_review, retention)

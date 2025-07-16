@@ -1,5 +1,6 @@
 import math
 from math import log, pi, sqrt
+from typing import Optional
 
 from fsrs_utils.fsrs4 import DECAY, FACTOR
 from knowledge_ema import GAMMA
@@ -79,9 +80,9 @@ def _knowledge_integral_v4(stability, t_begin=None, t_end=None, gamma=GAMMA):
 def _knowledge_integral_scipy(
     stability: float,
     decay: float,
-    factor: float | None = None,
-    t_begin: float | None = None,
-    t_end: float | None = None,
+    factor: Optional[float] = None,
+    t_begin: Optional[float] = None,
+    t_end: Optional[float] = None,
     gamma: float = GAMMA,
 ) -> float:
     from scipy.integrate import quad

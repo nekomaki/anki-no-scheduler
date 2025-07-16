@@ -23,10 +23,9 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 
 ## Installation
 
-1. Install the addon from [AnkiWeb](https://ankiweb.net/shared/info/215758055).
-2. Open Anki and go to **Tools > Add-ons**.
-3. Click on **Get Add-ons** and enter the code `215758055`.
-4. Restart Anki to activate the addon.
+1. Open Anki and go to **Tools > Add-ons**.
+2. Click on **Get Add-ons** and enter the code `215758055`.
+3. Restart Anki to activate the addon.
 
 ---
 

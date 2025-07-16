@@ -1,5 +1,6 @@
 import functools
 import math
+from typing import Optional
 
 from .types import State
 
@@ -23,7 +24,7 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
 
     @functools.cache
     def fsrs_simulate_cached(
-        state: State, t_review: float, retention: float | None = None
+        state: State, t_review: float, retention: Optional[float] = None
     ):
         (D, S), R = (state.difficulty, state.stability), retention
 
@@ -72,6 +73,6 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
 
 
 def fsrs_simulate(
-    state: State, fsrs_params: tuple, t_review: float, retention: float | None = None
+    state: State, fsrs_params: tuple, t_review: float, retention: Optional[float] = None
 ):
     return _fsrs_simulate_wrapper(fsrs_params)(state, t_review, retention)

@@ -1,5 +1,6 @@
 import functools
 import math
+from typing import Optional
 
 try:
     from ..fsrs_utils.fsrs6 import fsrs_simulate
@@ -21,9 +22,9 @@ FORGET_WORKLOAD = 1
 def _knowledge_integral(
     stability: float,
     decay: float,
-    factor: float | None = None,
-    t_begin: float | None = None,
-    t_end: float | None = None,
+    factor: Optional[float] = None,
+    t_begin: Optional[float] = None,
+    t_end: Optional[float] = None,
     gamma: float = GAMMA,
 ):
     if stability == 0:
