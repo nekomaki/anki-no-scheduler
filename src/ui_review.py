@@ -49,7 +49,13 @@ def _on_card_did_render(
         ekg = exp_knowledge_gain_v4(state, tuple(fsrs_params), elapsed_days)
 
     if ekg is not None:
-        ekg_message = f"Expected knowledge gain: {ekg:.3f}"
+        if ekg >= 0.1:
+            indicator = "High"
+        elif ekg >= 0.05:
+            indicator = "Medium"
+        else:
+            indicator = "Low"
+        ekg_message = f"Expected knowledge gain: {ekg:.3f} ({indicator})"
     elif fsrs_params is not None or fsrs_params_v6 is not None:
         ekg_message = "Expected knowledge gain is not supported for this FSRS version. Please delete and update your FSRS parameters."
     else:

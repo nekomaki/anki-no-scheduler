@@ -3,7 +3,7 @@
 .PHONY: build test clean
 
 DIST_DIR := dist
-OUTPUT := $(DIST_DIR)/output.ankiaddon
+OUTPUT := $(DIST_DIR)/review-order-by-knowledge-gain.ankiaddon
 
 build:
 	@echo "Building Anki addon package..."

@@ -104,31 +104,31 @@ def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) ->
 
 
 if __name__ == "__main__":
-    state = State(10.0, 0.01)
+    state = State(5.41, 0.2833333)
     fsrs_params = (
-        0.8065,
-        8.1580,
-        17.1604,
-        100.0000,
-        6.1813,
-        0.8775,
-        3.0892,
-        0.0223,
-        2.2848,
-        0.0126,
-        1.1841,
-        1.3679,
-        0.0827,
-        0.1116,
-        1.4900,
-        0.5721,
-        2.1657,
-        0.7048,
-        0.1296,
-        0.1008,
-        0.1000,
+        0.0212,
+        0.2849,
+        3.1533,
+        24.4448,
+        6.4748,
+        0.7424,
+        3.1032,
+        0.0010,
+        1.8021,
+        0.1157,
+        0.7286,
+        1.3906,
+        0.1507,
+        0.1679,
+        1.5564,
+        0.5314,
+        1.8290,
+        0.5890,
+        0.1003,
+        0.0765,
+        0.1895,
     )
-    elapsed_days = 0
+    elapsed_days = 2
 
     knowledge_gain = exp_knowledge_gain(state, fsrs_params, elapsed_days)
     print(f"Expected knowledge gain: {knowledge_gain:.3f}")
