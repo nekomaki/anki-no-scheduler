@@ -8,6 +8,7 @@ from .knowledge_ema.fsrs4 import exp_knowledge_gain as exp_knowledge_gain_v4
 from .knowledge_ema.fsrs5 import exp_knowledge_gain as exp_knowledge_gain_v5
 from .knowledge_ema.fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
 from .utils import (
+    get_knowledge_gain,
     get_last_review_date,
     is_valid_fsrs4_params,
     is_valid_fsrs5_params,
@@ -40,13 +41,7 @@ def _on_card_did_render(
     fsrs_params_v6 = deck_config.get("fsrsParams6")
     fsrs_params = deck_config.get("fsrsWeights")
 
-    ekg = None
-    if is_valid_fsrs6_params(fsrs_params_v6):
-        ekg = exp_knowledge_gain_v6(state, tuple(fsrs_params_v6), elapsed_days)
-    elif is_valid_fsrs5_params(fsrs_params):
-        ekg = exp_knowledge_gain_v5(state, tuple(fsrs_params), elapsed_days)
-    elif is_valid_fsrs4_params(fsrs_params):
-        ekg = exp_knowledge_gain_v4(state, tuple(fsrs_params), elapsed_days)
+    ekg = get_knowledge_gain(state, elapsed_days=elapsed_days, deck_config=deck_config)
 
     if ekg is not None:
         if ekg >= 0.1:

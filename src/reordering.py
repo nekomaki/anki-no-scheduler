@@ -6,24 +6,7 @@ from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config_manager import get_config
 from .fsrs_utils.types import State
-from .knowledge_ema.fsrs4 import exp_knowledge_gain as exp_knowledge_gain_v4
-from .knowledge_ema.fsrs4 import (
-    exp_knowledge_gain_future as exp_knowledge_gain_future_v4,
-)
-from .knowledge_ema.fsrs5 import exp_knowledge_gain as exp_knowledge_gain_v5
-from .knowledge_ema.fsrs5 import (
-    exp_knowledge_gain_future as exp_knowledge_gain_future_v5,
-)
-from .knowledge_ema.fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .knowledge_ema.fsrs6 import (
-    exp_knowledge_gain_future as exp_knowledge_gain_future_v6,
-)
-from .utils import (
-    get_last_review_date,
-    is_valid_fsrs4_params,
-    is_valid_fsrs5_params,
-    is_valid_fsrs6_params,
-)
+from .utils import get_knowledge_gain, get_last_review_date
 
 config = get_config()
 
@@ -52,35 +35,13 @@ def _key_exp_knowledge_gain(x):
     elapsed_days = cache["today"] - get_last_review_date(card)
 
     deck_config = mw.col.decks.config_dict_for_deck_id(deck_id)
-    fsrs_params_v6 = deck_config.get("fsrsParams6")
-    fsrs_params_v5_lower = deck_config.get("fsrsWeights")
 
-    fsrs_params = None
-    exp_knowledge_gain_func = None
+    knowledge_gain = (
+        get_knowledge_gain(state, elapsed_days=elapsed_days, deck_config=deck_config)
+        or 0.0
+    )
 
-    if is_valid_fsrs6_params(fsrs_params_v6):
-        fsrs_params = tuple(fsrs_params_v6)
-        if config.future_estimator:
-            exp_knowledge_gain_func = exp_knowledge_gain_future_v6
-        else:
-            exp_knowledge_gain_func = exp_knowledge_gain_v6
-    elif is_valid_fsrs5_params(fsrs_params_v5_lower):
-        fsrs_params = tuple(fsrs_params_v5_lower)
-        if config.future_estimator:
-            exp_knowledge_gain_func = exp_knowledge_gain_future_v5
-        else:
-            exp_knowledge_gain_func = exp_knowledge_gain_v5
-    elif is_valid_fsrs4_params(fsrs_params_v5_lower):
-        fsrs_params = tuple(fsrs_params_v5_lower)
-        if config.future_estimator:
-            exp_knowledge_gain_func = exp_knowledge_gain_future_v4
-        else:
-            exp_knowledge_gain_func = exp_knowledge_gain_v4
-
-    if fsrs_params is None:
-        return 0.0
-
-    return -exp_knowledge_gain_func(state, fsrs_params, elapsed_days)
+    return -knowledge_gain
 
 
 def _get_next_v3_card_patched(self) -> None:
