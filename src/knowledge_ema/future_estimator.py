@@ -3,7 +3,7 @@ try:
 except ImportError:
     from fsrs_utils.types import State
 
-MAX_DEPTH = 10
+MAX_DEPTH = 3
 
 
 def exp_knowledge_gain_future_greedy(
