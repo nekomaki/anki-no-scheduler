@@ -6,6 +6,7 @@ except ImportError:
     from fsrs_utils.types import State
 
 from .fsrs6 import calc_knowledge as calc_knowledge_v6
+from .future_estimator import exp_knowledge_gain_future_greedy
 
 
 def calc_knowledge(state: State, elapsed_days: float) -> float:
@@ -32,6 +33,14 @@ def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) ->
     )
 
     return reviewed_knowledge - current_knowledge
+
+
+def exp_knowledge_gain_future(
+    state: State, fsrs_params: tuple, elapsed_days: float
+) -> float:
+    return exp_knowledge_gain_future_greedy(
+        state, fsrs_params, elapsed_days, fsrs_simulate, exp_knowledge_gain
+    )
 
 
 if __name__ == "__main__":

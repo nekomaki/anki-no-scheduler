@@ -26,9 +26,16 @@ action_display_status.triggered.connect(
     lambda: setattr(config, "display_status", action_display_status.isChecked())
 )
 
+action_future_estimator = QAction("Use future estimator", mw, checkable=True)
+action_future_estimator.setChecked(config.future_estimator)
+action_future_estimator.triggered.connect(
+    lambda: setattr(config, "future_estimator", action_future_estimator.isChecked())
+)
+
 menu.addAction(action_reorder_cards)
-menu.addSeparator()
 menu.addAction(action_display_status)
+menu.addSeparator()
+menu.addAction(action_future_estimator)
 
 init_reordering()
 init_ui_review_hook()

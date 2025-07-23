@@ -10,6 +10,7 @@ except ImportError:
     from fsrs_utils.types import State
 
 from . import GAMMA
+from .future_estimator import exp_knowledge_gain_future_greedy
 from .utils import log_upper_gamma
 
 D_MIN, D_MAX = 1, 10
@@ -85,8 +86,8 @@ def _calc_reviewed_knowledge(state: State, fsrs_params: tuple, elapsed_days: flo
     next_states = fsrs_simulate(state, fsrs_params, elapsed_days)
 
     knowledge = sum(
-        prob * calc_knowledge(new_state, decay=decay, elapsed_days=0)
-        for prob, new_state, _ in next_states
+        prob * calc_knowledge(next_state, decay=decay, elapsed_days=0)
+        for prob, next_state, _ in next_states
     )
 
     return knowledge
@@ -103,8 +104,16 @@ def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) ->
     return reviewed_knowledge - current_knowledge
 
 
+def exp_knowledge_gain_future(
+    state: State, fsrs_params: tuple, elapsed_days: float
+) -> float:
+    return exp_knowledge_gain_future_greedy(
+        state, fsrs_params, elapsed_days, fsrs_simulate, exp_knowledge_gain
+    )
+
+
 if __name__ == "__main__":
-    state = State(5.41, 0.2833333)
+    state = State(10.0, 0.03)
     fsrs_params = (
         0.0212,
         0.2849,
@@ -128,7 +137,9 @@ if __name__ == "__main__":
         0.0765,
         0.1895,
     )
-    elapsed_days = 2
+    elapsed_days = 10
 
+    knowledge_gain_future = exp_knowledge_gain_future(state, fsrs_params, elapsed_days)
+    print(f"Expected knowledge gain future: {knowledge_gain_future}")
     knowledge_gain = exp_knowledge_gain(state, fsrs_params, elapsed_days)
-    print(f"Expected knowledge gain: {knowledge_gain:.3f}")
+    print(f"Expected knowledge gain: {knowledge_gain}")

@@ -27,6 +27,15 @@ class Config(object):
         self.data["display_status"] = value
         self.save()
 
+    @property
+    def future_estimator(self):
+        return self.data.get("future_estimator")
+
+    @future_estimator.setter
+    def future_estimator(self, value):
+        self.data["future_estimator"] = value
+        self.save()
+
     def save(self):
         mw.addonManager.writeConfig(addon_identifier, self.data)
 
