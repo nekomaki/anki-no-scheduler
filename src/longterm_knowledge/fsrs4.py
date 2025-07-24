@@ -1,3 +1,5 @@
+import functools
+
 try:
     from ..fsrs_utils.fsrs4 import DECAY, fsrs_simulate
     from ..fsrs_utils.types import State
@@ -20,12 +22,13 @@ def _calc_reviewed_knowledge(
 
     knowledge = sum(
         prob * calc_knowledge(new_state, elapsed_days=0)
-        for prob, new_state, _ in next_states
+        for prob, new_state in next_states
     )
 
     return knowledge
 
 
+@functools.cache
 def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) -> float:
     current_knowledge = calc_knowledge(state, elapsed_days=elapsed_days)
     reviewed_knowledge = _calc_reviewed_knowledge(
@@ -35,6 +38,7 @@ def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) ->
     return reviewed_knowledge - current_knowledge
 
 
+@functools.cache
 def exp_knowledge_gain_future(
     state: State, fsrs_params: tuple, elapsed_days: float
 ) -> float:

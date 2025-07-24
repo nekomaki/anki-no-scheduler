@@ -14,12 +14,17 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 
 - Reorders **learning** and **review** cards within the daily queue.
 - Displays **expected knowledge gain** for each card.
-- (Experimental) Estimates knowledge gain from future reviews.
+- Estimates knowledge gain from future reviews.
 - Compatible with FSRS 4.5, 5 and 6.
 
 ## Limitations
 
 - **Undo is not supported.**
+
+## Todos
+
+- [ ] Add fuzzer.
+- [ ] Add exam mode.
 
 ## Installation
 

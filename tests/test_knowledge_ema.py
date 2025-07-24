@@ -3,8 +3,10 @@ from math import log, pi, sqrt
 from typing import Optional
 
 from fsrs_utils.fsrs4 import DECAY, FACTOR
-from knowledge_ema import GAMMA
-from knowledge_ema.fsrs6 import _knowledge_integral as _knowledge_integral_v6
+from longterm_knowledge import GAMMA
+from longterm_knowledge.fsrs6 import (
+    _knowledge_integral as _knowledge_integral_v6,
+)
 
 
 def erfcx(x):

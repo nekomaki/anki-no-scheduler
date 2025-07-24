@@ -22,16 +22,22 @@ from aqt import mw
 
 from .config_manager import get_config
 from .fsrs_utils.types import State
-from .knowledge_ema.fsrs4 import exp_knowledge_gain as exp_knowledge_gain_v4
-from .knowledge_ema.fsrs4 import (
+from .longterm_knowledge.fsrs4 import (
+    exp_knowledge_gain as exp_knowledge_gain_v4,
+)
+from .longterm_knowledge.fsrs4 import (
     exp_knowledge_gain_future as exp_knowledge_gain_future_v4,
 )
-from .knowledge_ema.fsrs5 import exp_knowledge_gain as exp_knowledge_gain_v5
-from .knowledge_ema.fsrs5 import (
+from .longterm_knowledge.fsrs5 import (
+    exp_knowledge_gain as exp_knowledge_gain_v5,
+)
+from .longterm_knowledge.fsrs5 import (
     exp_knowledge_gain_future as exp_knowledge_gain_future_v5,
 )
-from .knowledge_ema.fsrs6 import exp_knowledge_gain as exp_knowledge_gain_v6
-from .knowledge_ema.fsrs6 import (
+from .longterm_knowledge.fsrs6 import (
+    exp_knowledge_gain as exp_knowledge_gain_v6,
+)
+from .longterm_knowledge.fsrs6 import (
     exp_knowledge_gain_future as exp_knowledge_gain_future_v6,
 )
 

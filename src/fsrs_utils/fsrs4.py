@@ -7,9 +7,6 @@ from .types import State
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
 
-NEW_WORKLOAD = 1
-FORGET_WORKLOAD = 1
-
 DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
 
@@ -41,7 +38,6 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
             # Compute new difficulty
             new_difficulty = w[7] * D03 + (1 - w[7]) * (D - w[6] * (rating - 3))
 
-            workload = 1
             if rating == 1:
                 # Forget
                 new_stability = (
@@ -50,7 +46,6 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
                     * ((S + 1) ** w[13] - 1)
                     * math.exp(w[14] * (1 - R))
                 )
-                workload = FORGET_WORKLOAD
             else:
                 new_stability = S * (
                     math.exp(w[8])
@@ -65,7 +60,7 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
             new_difficulty = min(D_MAX, max(D_MIN, new_difficulty))
             new_stability = min(S_MAX, max(S_MIN, new_stability))
 
-            res.append((prob, State(new_difficulty, new_stability), workload))
+            res.append((prob, State(new_difficulty, new_stability)))
 
         return res
 

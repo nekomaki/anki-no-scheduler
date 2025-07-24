@@ -16,8 +16,7 @@ from .utils import log_upper_gamma
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
 
-NEW_WORKLOAD = 1
-FORGET_WORKLOAD = 1
+EPS = 1e-5
 
 
 def _knowledge_integral(
@@ -40,7 +39,7 @@ def _knowledge_integral(
     def compute(x0, exponent):
         return math.exp(
             exponent * lgamma
-            + log_upper_gamma(decay + 1, x0)
+            + log_upper_gamma(decay + 1, x0, tol=EPS)
             - decay * (math.log(alpha) + math.log(lgamma))
         )
 
@@ -87,12 +86,13 @@ def _calc_reviewed_knowledge(state: State, fsrs_params: tuple, elapsed_days: flo
 
     knowledge = sum(
         prob * calc_knowledge(next_state, decay=decay, elapsed_days=0)
-        for prob, next_state, _ in next_states
+        for prob, next_state in next_states
     )
 
     return knowledge
 
 
+@functools.cache
 def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) -> float:
     current_knowledge = calc_knowledge(
         state, decay=-fsrs_params[20], elapsed_days=elapsed_days
@@ -104,6 +104,7 @@ def exp_knowledge_gain(state: State, fsrs_params: tuple, elapsed_days: float) ->
     return reviewed_knowledge - current_knowledge
 
 
+# @functools.cache
 def exp_knowledge_gain_future(
     state: State, fsrs_params: tuple, elapsed_days: float
 ) -> float:
@@ -139,7 +140,24 @@ if __name__ == "__main__":
     )
     elapsed_days = 10
 
-    knowledge_gain_future = exp_knowledge_gain_future(state, fsrs_params, elapsed_days)
+    import time
+
+    tic = time.time()
+
+    for i in range(100000):
+        knowledge_gain_future = exp_knowledge_gain_future(
+            state, fsrs_params, elapsed_days
+        )
     print(f"Expected knowledge gain future: {knowledge_gain_future}")
-    knowledge_gain = exp_knowledge_gain(state, fsrs_params, elapsed_days)
+
+    toc = time.time()
+    print(f"Time taken: {toc - tic:.4f} seconds")
+
+    tic = time.time()
+
+    for i in range(100000):
+        knowledge_gain = exp_knowledge_gain(state, fsrs_params, elapsed_days)
     print(f"Expected knowledge gain: {knowledge_gain}")
+
+    toc = time.time()
+    print(f"Time taken: {toc - tic:.4f} seconds")

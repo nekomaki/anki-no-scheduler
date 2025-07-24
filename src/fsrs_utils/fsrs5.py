@@ -7,9 +7,6 @@ from .types import State
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
 
-NEW_WORKLOAD = 1
-FORGET_WORKLOAD = 1
-
 DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
 

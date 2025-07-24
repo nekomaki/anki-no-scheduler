@@ -22,6 +22,7 @@ queue_to_index = {
 
 
 def _key_exp_knowledge_gain(x):
+    # There is no need to cache this function, as it is only called once per card
     card = x.card
     deck_id = card.original_deck_id or card.deck_id
 

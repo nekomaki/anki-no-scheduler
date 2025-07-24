@@ -7,7 +7,6 @@ from .types import State
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
 
-FORGET_WORKLOAD = 1
 
 
 def power_forgetting_curve(t: float, s: float, decay: float) -> float:
@@ -49,8 +48,6 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
             difficulty_prime = D + delta_difficulty * (10 - D) / 9
             new_difficulty = w[7] * D04 + (1 - w[7]) * difficulty_prime
 
-            workload = 1 if rating > 1 else FORGET_WORKLOAD
-
             if t_review < 1:
                 new_stability = (
                     S * math.exp(w[17] * (rating - 3 + w[18])) * S ** (-w[19])
@@ -78,7 +75,7 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
             new_difficulty = min(D_MAX, max(D_MIN, new_difficulty))
             new_stability = min(S_MAX, max(S_MIN, new_stability))
 
-            res.append((prob, State(new_difficulty, new_stability), workload))
+            res.append((prob, State(new_difficulty, new_stability)))
 
         return res
 

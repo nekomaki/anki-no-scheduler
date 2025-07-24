@@ -1,7 +1,7 @@
 import math
 
 
-def lower_gamma_series(a: float, x: float, tol=1e-14, max_iter=200) -> float:
+def lower_gamma_series(a: float, x: float, max_iter=200, tol=1e-14) -> float:
     """
     Compute lower incomplete gamma γ(a, x) via series:
     γ(a, x) = x^a e^{-x} * sum_{k=0}∞ x^k / [a(a+1)...(a+k)]
@@ -53,7 +53,7 @@ def log_upper_gamma_cf(a: float, x: float, max_iter=200, tol=1e-14) -> float:
     return log_Q + math.lgamma(a)
 
 
-def log_upper_gamma(a: float, x: float) -> float:
+def log_upper_gamma(a: float, x: float, max_iter=200, tol=1e-14) -> float:
     """
     Computes log(Γ(a, x)) for a > 0 and x > 0.
     Automatically chooses between series and continued fraction based on x.
@@ -63,11 +63,11 @@ def log_upper_gamma(a: float, x: float) -> float:
         raise ValueError("Requires a > 0 and x > 0")
 
     if x < a + 1:
-        P = lower_gamma_series(a, x)
+        P = lower_gamma_series(a, x, max_iter, tol)
         Q = 1.0 - P / math.exp(math.lgamma(a))
         if Q <= 0.0:
             # avoid log(0) or log(negative)
             return float('-inf')
         return math.log(Q) + math.lgamma(a)
     else:
-        return log_upper_gamma_cf(a, x)
+        return log_upper_gamma_cf(a, x, max_iter, tol)

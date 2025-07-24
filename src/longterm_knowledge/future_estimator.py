@@ -3,7 +3,7 @@ try:
 except ImportError:
     from fsrs_utils.types import State
 
-MAX_DEPTH = 3
+MAX_DEPTH = 5
 
 
 def exp_knowledge_gain_future_greedy(
@@ -24,22 +24,26 @@ def exp_knowledge_gain_future_greedy(
         state, knowledge_gain_avg, workload, prob = stk.pop()
 
         next_states = fsrs_simulate_func(state, fsrs_params, elapsed_days)
-        for next_prob, next_state, _ in next_states:
+
+        for next_prob, next_state in next_states:
             next_knowledge_gain = exp_knowledge_gain_func(
                 next_state, fsrs_params=fsrs_params, elapsed_days=elapsed_days
             )
-            if workload < MAX_DEPTH and next_knowledge_gain > knowledge_gain_avg:
+            if next_knowledge_gain > knowledge_gain_avg:
                 next_knowledge_gain_avg = (
                     knowledge_gain_avg * workload + next_knowledge_gain
                 ) / (workload + 1)
-                stk.append(
-                    (
-                        next_state,
-                        next_knowledge_gain_avg,
-                        workload + 1,
-                        prob * next_prob,
+                if workload + 1 < MAX_DEPTH:
+                    stk.append(
+                        (
+                            next_state,
+                            next_knowledge_gain_avg,
+                            workload + 1,
+                            prob * next_prob,
+                        )
                     )
-                )
+                else:
+                    result += prob * next_prob * next_knowledge_gain_avg
             else:
                 result += prob * next_prob * knowledge_gain_avg
 
