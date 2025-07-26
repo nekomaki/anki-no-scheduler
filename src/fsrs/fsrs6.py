@@ -1,40 +1,48 @@
-import functools
 import math
+from functools import cache
 from typing import Optional
 
+from . import FSRS
 from .types import State
 
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
 
 
+class FSRS6(FSRS):
+    EXPECTED_LENGTH = 21
+    VERSION = 6
 
-def power_forgetting_curve(t: float, s: float, decay: float) -> float:
-    factor = math.pow(0.9, 1 / decay) - 1
-    return math.pow(1 + factor * t / s, decay)
+    def __init__(self, params: tuple[float, ...]):
+        super().__init__(params=params)
+        self._decay = -params[20]
+        self._factor = 0.9 ** (1 / self._decay) - 1
 
+    @property
+    def decay(self) -> float:
+        return self._decay
 
-def interval_from_retention(state: State, retention: float, decay: float) -> float:
-    factor = math.pow(0.9, 1 / decay) - 1
-    alpha = (retention ** (1 / decay) - 1) / factor
-    interval = state.stability * alpha
-    interval = state.stability * alpha
+    def power_forgetting_curve(self, t: float, s: float) -> float:
+        return (1 + self._factor * t / s) ** self._decay
 
-    return interval
+    def interval_from_retention(self, state: State, retention: float) -> float:
+        alpha = (retention ** (1 / self._decay) - 1) / self._factor
+        interval = state.stability * alpha
 
+        return interval
 
-@functools.cache
-def _fsrs_simulate_wrapper(fsrs_params: tuple):
-    w = fsrs_params
-
-    @functools.cache
-    def _fsrs_simulate_cached(
-        state: State, t_review: float, retention: Optional[float] = None
-    ):
+    @cache
+    def simulate(
+        self,
+        state: State,
+        t_review: float,
+        retention: Optional[float] = None,
+    ) -> list[tuple[float, State]]:
+        w = self.params
         (D, S), R = (state.difficulty, state.stability), retention
 
         if R is None:
-            R = power_forgetting_curve(t_review, S, -fsrs_params[20])
+            R = self.power_forgetting_curve(t_review, S)
 
         # We only consider two outcomes
         ratings = [1, 3]
@@ -78,11 +86,3 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
             res.append((prob, State(new_difficulty, new_stability)))
 
         return res
-
-    return _fsrs_simulate_cached
-
-
-def fsrs_simulate(
-    state: State, fsrs_params: tuple, t_review: float, retention: Optional[float] = None
-):
-    return _fsrs_simulate_wrapper(fsrs_params)(state, t_review, retention)

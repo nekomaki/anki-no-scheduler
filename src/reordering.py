@@ -5,7 +5,7 @@ from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config_manager import get_config
-from .fsrs_utils.types import State
+from .fsrs.types import State
 from .utils import get_knowledge_gain, get_last_review_date
 
 config = get_config()

@@ -21,25 +21,11 @@ from anki.stats_pb2 import CardStatsResponse
 from aqt import mw
 
 from .config_manager import get_config
-from .fsrs_utils.types import State
-from .longterm_knowledge.fsrs4 import (
-    exp_knowledge_gain as exp_knowledge_gain_v4,
-)
-from .longterm_knowledge.fsrs4 import (
-    exp_knowledge_gain_future as exp_knowledge_gain_future_v4,
-)
-from .longterm_knowledge.fsrs5 import (
-    exp_knowledge_gain as exp_knowledge_gain_v5,
-)
-from .longterm_knowledge.fsrs5 import (
-    exp_knowledge_gain_future as exp_knowledge_gain_future_v5,
-)
-from .longterm_knowledge.fsrs6 import (
-    exp_knowledge_gain as exp_knowledge_gain_v6,
-)
-from .longterm_knowledge.fsrs6 import (
-    exp_knowledge_gain_future as exp_knowledge_gain_future_v6,
-)
+from .fsrs.types import State
+from .longterm_knowledge.ema.fsrs4 import FSRS4Knowledge
+from .longterm_knowledge.ema.fsrs5 import FSRS5Knowledge
+from .longterm_knowledge.ema.fsrs6 import FSRS6Knowledge
+from .longterm_knowledge.knowledge import KnowledgeProtocol
 
 BackendCard = cards_pb2.Card
 
@@ -84,50 +70,40 @@ def get_decay(card: Card):
     return getattr(card, "decay", 0.5) or 0.5
 
 
-def is_valid_fsrs6_params(fsrs_params):
-    return isinstance(fsrs_params, (list, tuple)) and len(fsrs_params) == 21
+def get_valid_fsrs6(fsrs_params):
+    if isinstance(fsrs_params, list) and len(fsrs_params) == 21:
+        return FSRS6Knowledge.from_list(fsrs_params)
+    return None
 
 
-def is_valid_fsrs5_params(fsrs_params):
-    return isinstance(fsrs_params, (list, tuple)) and len(fsrs_params) == 19
+def get_valid_fsrs5(fsrs_params):
+    if isinstance(fsrs_params, list) and len(fsrs_params) == 19:
+        return FSRS5Knowledge.from_list(fsrs_params)
+    return None
 
 
-def is_valid_fsrs4_params(fsrs_params):
-    return isinstance(fsrs_params, (list, tuple)) and len(fsrs_params) == 17
+def get_valid_fsrs4(fsrs_params):
+    if isinstance(fsrs_params, list) and len(fsrs_params) == 17:
+        return FSRS4Knowledge.from_list(fsrs_params)
+    return None
 
 
 def get_knowledge_gain(
     state: State, elapsed_days: int, deck_config: dict[str, list[float]]
 ) -> Optional[float]:
     fsrs_params_v6 = deck_config.get("fsrsParams6")
-    fsrs_params_v5_lower = deck_config.get("fsrsWeights")
+    fsrs_params_v5_or_lower = deck_config.get("fsrsWeights")
 
-    fsrs_params = None
-    exp_knowledge_gain_func = None
+    fsrs: Optional[KnowledgeProtocol] = (
+        get_valid_fsrs6(fsrs_params_v6)
+        or get_valid_fsrs5(fsrs_params_v5_or_lower)
+        or get_valid_fsrs4(fsrs_params_v5_or_lower)
+    )
 
-    if is_valid_fsrs6_params(fsrs_params_v6):
-        fsrs_params = tuple(fsrs_params_v6)
-        if config.future_estimator:
-            exp_knowledge_gain_func = exp_knowledge_gain_future_v6
-        else:
-            exp_knowledge_gain_func = exp_knowledge_gain_v6
-    elif is_valid_fsrs5_params(fsrs_params_v5_lower):
-        fsrs_params = tuple(fsrs_params_v5_lower)
-        if config.future_estimator:
-            exp_knowledge_gain_func = exp_knowledge_gain_future_v5
-        else:
-            exp_knowledge_gain_func = exp_knowledge_gain_v5
-    elif is_valid_fsrs4_params(fsrs_params_v5_lower):
-        fsrs_params = tuple(fsrs_params_v5_lower)
-        if config.future_estimator:
-            exp_knowledge_gain_func = exp_knowledge_gain_future_v4
-        else:
-            exp_knowledge_gain_func = exp_knowledge_gain_v4
-
-    if fsrs_params is None or exp_knowledge_gain_func is None:
+    if fsrs is None:
         return None
 
-    return exp_knowledge_gain_func(state, fsrs_params, elapsed_days)
+    return fsrs.exp_knowledge_gain(state, elapsed_days)
 
 
 # def get_new_rating_probs(deck_id):

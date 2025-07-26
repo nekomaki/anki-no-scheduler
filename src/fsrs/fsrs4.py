@@ -1,7 +1,8 @@
-import functools
 import math
+from functools import cache
 from typing import Optional
 
+from . import FSRS
 from .types import State
 
 D_MIN, D_MAX = 1, 10
@@ -11,22 +12,35 @@ DECAY = -0.5
 FACTOR = 0.9 ** (1 / DECAY) - 1
 
 
-def power_forgetting_curve(t: float, s: float) -> float:
-    return (1 + FACTOR * t / s) ** DECAY
+class FSRS4(FSRS):
+    EXPECTED_LENGTH = 17
+    VERSION = 4
 
+    def __init__(self, params: tuple[float, ...]):
+        super().__init__(params=params)
 
-@functools.cache
-def _fsrs_simulate_wrapper(fsrs_params: tuple):
-    w = fsrs_params
+    @classmethod
+    def power_forgetting_curve(cls, t: float, s: float) -> float:
+        return (1 + FACTOR * t / s) ** DECAY
 
-    @functools.cache
-    def fsrs_simulate_cached(
-        state: State, t_review: float, retention: Optional[float] = None
-    ):
+    @classmethod
+    def interval_from_retention(cls, state: State, retention: float) -> float:
+        alpha = (retention ** (1 / DECAY) - 1) / FACTOR
+        interval = state.stability * alpha
+        return interval
+
+    @cache
+    def simulate(
+        self,
+        state: State,
+        t_review: float,
+        retention: Optional[float] = None,
+    ) -> list[tuple[float, State]]:
+        w = self.params
         (D, S), R = (state.difficulty, state.stability), retention
 
         if R is None:
-            R = power_forgetting_curve(t_review, S)
+            R = self.power_forgetting_curve(t_review, S)
 
         # We only consider two outcomes
         ratings = [1, 3]
@@ -63,11 +77,3 @@ def _fsrs_simulate_wrapper(fsrs_params: tuple):
             res.append((prob, State(new_difficulty, new_stability)))
 
         return res
-
-    return fsrs_simulate_cached
-
-
-def fsrs_simulate(
-    state: State, fsrs_params: tuple, t_review: float, retention: Optional[float] = None
-):
-    return _fsrs_simulate_wrapper(fsrs_params)(state, t_review, retention)
