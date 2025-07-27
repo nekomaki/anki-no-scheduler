@@ -3,8 +3,8 @@ from math import log, pi, sqrt
 from typing import Optional
 
 from fsrs.fsrs4 import DECAY, FACTOR
-from longterm_knowledge import GAMMA
-from longterm_knowledge.fsrs6 import (
+from longterm_knowledge.ema import GAMMA
+from longterm_knowledge.ema.fsrs6 import (
     _knowledge_integral as _knowledge_integral_v6,
 )
 
@@ -117,7 +117,7 @@ def test_knowledge_integral_fsrs4():
             stability=stability, t_begin=30, t_end=365, gamma=GAMMA
         )
         knowledge_fsrs6 = _knowledge_integral_v6(
-            stability=stability, decay=DECAY, t_begin=30, t_end=365, gamma=GAMMA
+            stability=stability, decay=DECAY, factor=FACTOR, t_begin=30, t_end=365, gamma=GAMMA, tol=1e-14
         )
 
         assert math.isclose(
@@ -127,12 +127,13 @@ def test_knowledge_integral_fsrs4():
 
 def test_knowledge_integral_scipy():
     for decay in [-0.1, -0.5]:
+        factor = 0.9 ** (1 / decay) - 1
         for stability in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 36500.0]:
             knowledge_fsrs6 = _knowledge_integral_v6(
-                stability=stability, decay=decay, t_begin=30, t_end=365, gamma=GAMMA
+                stability=stability, decay=decay, factor=factor, t_begin=30, t_end=365, gamma=GAMMA, tol=1e-14
             )
             knowledge_scipy = _knowledge_integral_scipy(
-                stability=stability, decay=decay, t_begin=30, t_end=365, gamma=GAMMA
+                stability=stability, decay=decay, factor=factor, t_begin=30, t_end=365, gamma=GAMMA
             )
 
             assert math.isclose(

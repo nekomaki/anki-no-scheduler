@@ -22,6 +22,14 @@ class FSRS(ABC):
     def version(self) -> int:
         return self.VERSION
 
+    @property
+    def decay(self) -> float:
+        raise NotImplementedError("Subclasses must implement the decay property.")
+
+    @property
+    def factor(self) -> float:
+        raise NotImplementedError("Subclasses must implement the factor property.")
+
     def __getitem__(self, index: int) -> float:
         return self._params[index]
 

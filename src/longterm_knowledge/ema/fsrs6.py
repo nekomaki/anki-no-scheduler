@@ -5,11 +5,13 @@ from typing import TYPE_CHECKING, Optional
 try:
     from ...fsrs.fsrs6 import FSRS6
     from ...fsrs.types import State
-    from ..knowledge import GAMMA, KnowledgeMixin
+    from ..knowledge import KnowledgeMixin
 except ImportError:
     from fsrs.fsrs6 import FSRS6
     from fsrs.types import State
-    from longterm_knowledge.knowledge import GAMMA, KnowledgeMixin
+    from longterm_knowledge.knowledge import  KnowledgeMixin
+
+from . import GAMMA
 
 if TYPE_CHECKING:
 
@@ -25,22 +27,20 @@ from .utils import log_upper_gamma
 D_MIN, D_MAX = 1, 10
 S_MIN, S_MAX = 0.01, 36500
 
-EPS = 1e-5
+TOL = 1e-5
 
 
 def _knowledge_integral(
     stability: float,
     decay: float,
-    factor: Optional[float] = None,
+    factor: float,
     t_begin: Optional[float] = None,
     t_end: Optional[float] = None,
     gamma: float = GAMMA,
+    tol: float = TOL,
 ):
     if stability == 0:
         return 0.0
-
-    if factor is None:
-        factor = math.pow(0.9, 1 / decay) - 1
 
     alpha = stability / factor
     lgamma = -math.log(gamma)
@@ -48,7 +48,7 @@ def _knowledge_integral(
     def compute(x0, exponent):
         return math.exp(
             exponent * lgamma
-            + log_upper_gamma(decay + 1, x0, tol=EPS)
+            + log_upper_gamma(decay + 1, x0, tol=tol)
             - decay * (math.log(alpha) + math.log(lgamma))
         )
 
@@ -66,10 +66,9 @@ def _knowledge_integral(
     elif t_end is not None:
         if t_begin is None:
             t_begin = 0.0
-        return _knowledge_integral(
-            stability, decay=decay, factor=factor, t_begin=t_begin
-        ) - math.pow(gamma, (t_end - t_begin)) * _knowledge_integral(
-            stability, decay=decay, factor=factor, t_begin=t_end
+        x0 = (alpha + t_begin) * lgamma
+        return compute(x0, alpha + t_begin) - gamma ** (t_end - t_begin) * compute(
+            (alpha + t_end) * lgamma, alpha + t_end
         )
     else:
         raise NotImplementedError
@@ -77,15 +76,20 @@ def _knowledge_integral(
 
 @cache
 def _calc_knowledge_cached(
-    stability: float, decay: float, elapsed_days: float
+    stability: float, decay: float, factor: float, elapsed_days: float
 ) -> float:
-    return _knowledge_integral(stability, decay=decay, t_begin=elapsed_days)
+    return _knowledge_integral(
+        stability, decay=decay, factor=factor, t_begin=elapsed_days
+    )
 
 
 class FSRS6Knowledge(KnowledgeMixin, _FSRS6):
     def calc_knowledge(self, state: State, elapsed_days: float) -> float:
         return _calc_knowledge_cached(
-            state.stability, decay=self.decay, elapsed_days=elapsed_days
+            state.stability,
+            decay=self.decay,
+            factor=self.factor,
+            elapsed_days=elapsed_days,
         )
 
 

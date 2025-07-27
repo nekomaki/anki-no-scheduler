@@ -6,7 +6,6 @@ try:
 except ImportError:
     from fsrs.types import FSRSProtocol, State
 
-GAMMA = 0.99
 MAX_DEPTH = 10
 
 

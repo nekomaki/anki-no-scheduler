@@ -19,6 +19,14 @@ class FSRS4(FSRS):
     def __init__(self, params: tuple[float, ...]):
         super().__init__(params=params)
 
+    @property
+    def decay(self) -> float:
+        return DECAY
+
+    @property
+    def factor(self) -> float:
+        return FACTOR
+
     @classmethod
     def power_forgetting_curve(cls, t: float, s: float) -> float:
         return (1 + FACTOR * t / s) ** DECAY

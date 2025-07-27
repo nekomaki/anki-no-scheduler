@@ -15,6 +15,14 @@ class FSRS5(FSRS):
     EXPECTED_LENGTH = 19
     VERSION = 5
 
+    @property
+    def decay(self) -> float:
+        return DECAY
+
+    @property
+    def factor(self) -> float:
+        return FACTOR
+
     def __init__(self, params: tuple[float, ...], fsrs6: Optional[FSRS6] = None):
         super().__init__(params=params)
         self._fsrs6 = fsrs6 or FSRS6(params + (0.0, -DECAY))

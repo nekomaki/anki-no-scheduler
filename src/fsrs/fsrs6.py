@@ -22,6 +22,10 @@ class FSRS6(FSRS):
     def decay(self) -> float:
         return self._decay
 
+    @property
+    def factor(self) -> float:
+        return self._factor
+
     def power_forgetting_curve(self, t: float, s: float) -> float:
         return (1 + self._factor * t / s) ** self._decay
 
