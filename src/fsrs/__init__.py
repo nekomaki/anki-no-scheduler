@@ -44,7 +44,7 @@ class FSRS(ABC):
                 f"{cls.__name__} expects {cls.EXPECTED_LENGTH} parameters, got {len(params)}."
             )
 
-        return cls(params)  # type: ignore [call-arg]
+        return cls(params)
 
     @classmethod
     def from_list(cls: Type[T], params: list[float]) -> T:

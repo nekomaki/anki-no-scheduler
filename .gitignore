@@ -4,3 +4,4 @@ src/meta.json
 *.ankiaddon
 .pytest_cache/
 dist/
+tmp/

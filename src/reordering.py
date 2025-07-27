@@ -1,12 +1,18 @@
+import anki
 from anki.cards import Card
+from anki.cards_pb2 import FsrsMemoryState
 from anki.scheduler.v3 import QueuedCards
 from anki.scheduler.v3 import Scheduler as V3Scheduler
 from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
+from aqt.utils import tooltip
 
 from .config_manager import get_config
 from .fsrs.types import State
 from .utils import get_knowledge_gain, get_last_review_date
+
+Learning = anki.scheduler_pb2.SchedulingState.Learning
+Review = anki.scheduler_pb2.SchedulingState.Review
 
 config = get_config()
 
@@ -151,6 +157,70 @@ def _on_card_suspended(id: int) -> None:
         reviewer._cards_cached = None
 
 
+def _on_card_will_show(text: str, card: Card, kind: str) -> str:
+    if kind != "reviewAnswer":
+        return text
+
+    if not config.disable_same_day_reviews:
+        return text
+
+    def _update_normal(normal):
+        kind = normal.WhichOneof("kind")
+
+        memory_state = None
+
+        if kind == "review":
+            if normal.review.HasField("memory_state"):
+                memory_state = normal.review.memory_state
+        elif kind == "learning":
+            if normal.learning.HasField("memory_state"):
+                memory_state = normal.learning.memory_state
+        elif kind == "relearning":
+            if normal.relearning.review.HasField("memory_state"):
+                memory_state = normal.relearning.review.memory_state
+        else:
+            raise ValueError(f"Unknown normal kind: {kind}")
+
+        if memory_state is None:
+            return
+
+        state = State(float(memory_state.difficulty), float(memory_state.stability))
+
+        # If the algorithm fails to converge, fall back to the default behavior
+        if kind == "learning":
+            tooltip(str(normal), period=50000)
+            normal.ClearField(kind)
+            normal.review.CopyFrom(
+                Review(
+                    scheduled_days=1,
+                    memory_state=FsrsMemoryState(
+                        difficulty=state.difficulty,
+                        stability=state.stability,
+                    ),
+                )
+            )
+        elif kind == "relearning":
+            tooltip(str(normal), period=50000)
+            scheduled_days = normal.relearning.review.scheduled_days
+            normal.ClearField(kind)
+            normal.review.CopyFrom(
+                Review(
+                    scheduled_days=scheduled_days,
+                    memory_state=FsrsMemoryState(
+                        difficulty=state.difficulty,
+                        stability=state.stability,
+                    ),
+                )
+            )
+
+    _update_normal(mw.reviewer._v3.states.again.normal)
+    _update_normal(mw.reviewer._v3.states.hard.normal)
+    _update_normal(mw.reviewer._v3.states.good.normal)
+    _update_normal(mw.reviewer._v3.states.easy.normal)
+
+    return text
+
+
 def update_reordering():
     if config.reorder_cards:
         Reviewer._get_next_v3_card = _get_next_v3_card_patched
@@ -163,3 +233,4 @@ def init_reordering():
     gui_hooks.reviewer_did_answer_card.append(_on_card_answered)
     gui_hooks.reviewer_will_bury_card.append(_on_card_buried)
     gui_hooks.reviewer_will_suspend_card.append(_on_card_suspended)
+    gui_hooks.card_will_show.append(_on_card_will_show)

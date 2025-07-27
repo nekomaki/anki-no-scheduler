@@ -19,21 +19,21 @@ class Config(object):
         self.save()
 
     @property
+    def disable_same_day_reviews(self):
+        return self.data.get("disable_same_day_reviews")
+
+    @disable_same_day_reviews.setter
+    def disable_same_day_reviews(self, value):
+        self.data["disable_same_day_reviews"] = value
+        self.save()
+
+    @property
     def display_status(self):
         return self.data.get("display_status")
 
     @display_status.setter
     def display_status(self, value):
         self.data["display_status"] = value
-        self.save()
-
-    @property
-    def future_estimator(self):
-        return self.data.get("future_estimator")
-
-    @future_estimator.setter
-    def future_estimator(self, value):
-        self.data["future_estimator"] = value
         self.save()
 
     def save(self):

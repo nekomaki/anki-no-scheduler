@@ -1,14 +1,22 @@
-# Review Order by Knowledge Gain
+# No Scheduler – Review Order by Long-term Knowledge Gain
 
-Reorder your Anki queue by **expected knowledge gain** to maximize learning efficiency.
+No scheduler. No leech concerns. No review history burden.
+
+This addon reorders your Anki queue by **expected knowledge gain** to maximize learning efficiency.
+
+## Usage
+
+1. Enable FSRS and this addon in Anki.
+2. Set the desired retention to 0.9 or higher in the deck's FSRS settings.
+3. Set your preferred daily learning and review limits.
+4. Start learning.
+5. Increase learning/review limits in Custom Study if you want to learn more.
 
 ## How it works
 
-This addon introduces a new review strategy that goes beyond Anki’s built-in options (like "easy cards first" or "descending retrievability"). It prioritizes cards that contribute the most to your long-term memory.
+This addon introduces a new review strategy that goes beyond Anki’s built-in options (like "easy cards first" or "descending retrievability"). It prioritizes cards that contribute the most to your long-term memory so that the cards with the highest expected gain are reviewed first.
 
-Long-term knowledge is estimated using an exponential moving average (EMA) of retrievability. This produces a score between 0 and 1 that reflects how well a card is expected to be remembered over time.
-
-The addon calculates the expected gain in long-term knowledge for each card and reorders your review queue so that the cards with the highest expected gain are reviewed first.
+The long-term knowledge is estimated using an exponential moving average (EMA) of retrievability. This produces a score between 0 and 1 that reflects how well a card is expected to be remembered over time.
 
 ## Features
 
@@ -20,6 +28,7 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 ## Limitations
 
 - **Undo is not supported.**
+- FSRS 6 currently lacks a short-term memory model, and the knowledge gain of same-day reviews is a constant. This addon disables same-day reviews by default. Once FSRS supports short-term memory modeling, future updates will integrate it and add support for exam mode.
 
 ## Todos
 
@@ -27,6 +36,8 @@ The addon calculates the expected gain in long-term knowledge for each card and 
 - [ ] Add exam mode.
 
 ## Installation
+
+Install from [AnkiWeb](https://ankiweb.net/shared/info/215758055).
 
 1. Open Anki and go to **Tools > Add-ons**.
 2. Click on **Get Add-ons** and enter the code `215758055`.

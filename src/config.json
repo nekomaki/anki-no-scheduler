@@ -1,5 +1,5 @@
 {
     "reorder_cards": true,
-    "display_status": true,
-    "future_estimator": true
+    "disable_same_day_reviews": true,
+    "display_status": true
 }
