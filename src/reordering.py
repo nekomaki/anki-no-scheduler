@@ -5,7 +5,6 @@ from anki.scheduler.v3 import QueuedCards
 from anki.scheduler.v3 import Scheduler as V3Scheduler
 from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
-from aqt.utils import tooltip
 
 from .config_manager import get_config
 from .fsrs.types import State
@@ -188,7 +187,6 @@ def _on_card_will_show(text: str, card: Card, kind: str) -> str:
 
         # If the algorithm fails to converge, fall back to the default behavior
         if kind == "learning":
-            tooltip(str(normal), period=50000)
             normal.ClearField(kind)
             normal.review.CopyFrom(
                 Review(
@@ -200,7 +198,6 @@ def _on_card_will_show(text: str, card: Card, kind: str) -> str:
                 )
             )
         elif kind == "relearning":
-            tooltip(str(normal), period=50000)
             scheduled_days = normal.relearning.review.scheduled_days
             normal.ClearField(kind)
             normal.review.CopyFrom(
