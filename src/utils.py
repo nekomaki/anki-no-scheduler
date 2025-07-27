@@ -22,9 +22,9 @@ from aqt import mw
 
 from .config_manager import get_config
 from .fsrs.types import State
-from .longterm_knowledge.ema.fsrs4 import FSRS4Knowledge
-from .longterm_knowledge.ema.fsrs5 import FSRS5Knowledge
-from .longterm_knowledge.ema.fsrs6 import FSRS6Knowledge
+from .longterm_knowledge.discounted.fsrs4 import FSRS4Knowledge
+from .longterm_knowledge.discounted.fsrs5 import FSRS5Knowledge
+from .longterm_knowledge.discounted.fsrs6 import FSRS6Knowledge
 from .longterm_knowledge.knowledge import KnowledgeProtocol
 
 BackendCard = cards_pb2.Card

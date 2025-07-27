@@ -8,7 +8,7 @@ try:
 except ImportError:
     from fsrs.fsrs5 import DECAY, FSRS5
     from fsrs.types import State
-    from longterm_knowledge.ema.fsrs6 import FSRS6Knowledge
+    from longterm_knowledge.discounted.fsrs6 import FSRS6Knowledge
     from longterm_knowledge.knowledge import KnowledgeMixin
 
 if TYPE_CHECKING:

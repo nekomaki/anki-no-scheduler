@@ -3,8 +3,8 @@ from math import log, pi, sqrt
 from typing import Optional
 
 from fsrs.fsrs4 import DECAY, FACTOR
-from longterm_knowledge.ema import GAMMA
-from longterm_knowledge.ema.fsrs6 import (
+from longterm_knowledge.discounted import GAMMA
+from longterm_knowledge.discounted.fsrs6 import (
     _knowledge_integral as _knowledge_integral_v6,
 )
 

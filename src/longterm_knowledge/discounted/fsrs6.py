@@ -9,7 +9,7 @@ try:
 except ImportError:
     from fsrs.fsrs6 import FSRS6
     from fsrs.types import State
-    from longterm_knowledge.knowledge import  KnowledgeMixin
+    from longterm_knowledge.knowledge import KnowledgeMixin
 
 from . import GAMMA
 
@@ -94,41 +94,43 @@ class FSRS6Knowledge(KnowledgeMixin, _FSRS6):
 
 
 if __name__ == "__main__":
-    state = State(difficulty=10.0, stability=3.0)
-    elapsed_days = 1
+    state = State(difficulty=10.0, stability=0.01)
+    elapsed_days = 30
 
     import time
 
     tic = time.time()
 
-    for i in range(100000):
-        fsrs = FSRS6Knowledge.from_list(
-            [
-                0.0287,
-                0.2781,
-                4.5604,
-                49.4121,
-                6.4429,
-                0.7331,
-                3.0339,
-                0.0010,
-                1.8213,
-                0.1312,
-                0.7468,
-                1.3651,
-                0.1602,
-                0.1411,
-                1.5397,
-                0.5035,
-                1.9940,
-                0.5862,
-                0.1305,
-                0.1015,
-                0.2263,
-            ]
-        )
-        knowledge_gain = fsrs.exp_knowledge_gain_future(state, elapsed_days)
+    # for i in range(100000):
+    fsrs = FSRS6Knowledge.from_list(
+        [
+            0.8457,
+            8.1627,
+            17.1531,
+            100.0000,
+            6.2004,
+            0.8907,
+            3.0530,
+            0.0282,
+            2.3039,
+            0.0302,
+            1.2036,
+            1.3832,
+            0.0883,
+            0.1358,
+            1.5999,
+            0.5648,
+            2.2040,
+            0.7055,
+            0.1141,
+            0.0916,
+            0.1000,
+        ]
+    )
+    retrivibility = fsrs.power_forgetting_curve(elapsed_days, state.stability)
+    knowledge_gain = fsrs.exp_knowledge_gain_future(state, elapsed_days)
     print(f"Expected knowledge gain: {knowledge_gain}")
+    print(f"Retrievability: {retrivibility}")
 
     toc = time.time()
     print(f"Time taken: {toc - tic:.4f} seconds")

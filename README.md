@@ -16,7 +16,7 @@ This addon reorders your Anki queue by **expected knowledge gain** to maximize l
 
 This addon introduces a new review strategy that goes beyond Anki’s built-in options (like "easy cards first" or "descending retrievability"). It prioritizes cards that contribute the most to your long-term memory so that the cards with the highest expected gain are reviewed first.
 
-The long-term knowledge is estimated using an exponential moving average (EMA) of retrievability. This produces a score between 0 and 1 that reflects how well a card is expected to be remembered over time.
+The long-term knowledge is estimated using discounted retrievability. This produces a score between 0 and 1 that reflects how well a card is expected to be remembered over time.
 
 ## Features
 
@@ -47,10 +47,10 @@ Install from [AnkiWeb](https://ankiweb.net/shared/info/215758055).
 
 ## Long-term knowledge computation
 
-This addon estimates **long-term knowledge** using **exponential moving average (EMA)** retrievability:
+This addon estimates **long-term knowledge** using **discounted** retrievability:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = -\log \gamma \int_{0}^{\infty} R(\text{card}, T + t) \gamma^t \mathrm{d}t
+J_{\text{dis}}(\text{card}, T; \gamma) = -\log \gamma \int_{0}^{\infty} R(\text{card}, T + t) \gamma^t \mathrm{d}t
 $$
 
 where
@@ -62,7 +62,7 @@ where
 For FSRS 4.5 and 5, there’s a closed-form expression for it:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = \sqrt{\pi\alpha\log\gamma} \cdot \text{erfcx}\left(\sqrt{(\alpha-T)\log\gamma}\right)
+J(\text{card}, T; \gamma) = \sqrt{\pi\alpha\log\gamma} \cdot \text{erfcx}\left(\sqrt{(\alpha-T)\log\gamma}\right)
 $$
 
 where
