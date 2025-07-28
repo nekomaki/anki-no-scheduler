@@ -18,6 +18,8 @@ This addon introduces a new review strategy that goes beyond Anki’s built-in o
 
 The long-term knowledge is estimated using discounted retrievability. This produces a score between 0 and 1 that reflects how well a card is expected to be remembered over time.
 
+The future estimator uses a few steps of FSRS simulation to predict the knowledge gain from future reviews.
+
 ## Features
 
 - Reorders **learning** and **review** cards within the daily queue.
@@ -47,7 +49,7 @@ Install from [AnkiWeb](https://ankiweb.net/shared/info/215758055).
 
 The evaluation is based on [review-sort-order-comparison](https://github.com/open-spaced-repetition/review-sort-order-comparison), but using an unweighted setting where each review takes equal time. Future versions of this addon may incorporate actual review time.
 
-By default, this addon uses the discounted knowledge mode (`knowledge_gain_discounted_desc`). In the experiments, the exam mode (`knowledge_gain_delayed_desc`) achieved the best performance.
+By default, this addon uses the discounted knowledge (`knowledge_gain_discounted_desc`). In the experiments, the exam mode (`knowledge_gain_delayed_desc`) achieved the best performance.
 
 | order                         | total_learned | total_time | total_remembered | average_true_retention | seconds_per_remembered_card |
 |------------------------------|----------------|-------------|-------------------|-------------------------|------------------------------|
