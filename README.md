@@ -43,6 +43,31 @@ Install from [AnkiWeb](https://ankiweb.net/shared/info/215758055).
 2. Click on **Get Add-ons** and enter the code `215758055`.
 3. Restart Anki to activate the addon.
 
+## Evaluation
+
+The evaluation is based on [review-sort-order-comparison](https://github.com/open-spaced-repetition/review-sort-order-comparison), but using an unweighted setting where each review takes equal time. Future versions of this addon may incorporate actual review time.
+
+By default, this addon uses the discounted knowledge mode (`knowledge_gain_discounted_desc`). In the experiments, the exam mode (`knowledge_gain_delayed_desc`) achieved the best performance.
+
+| order                         | total_learned | total_time | total_remembered | average_true_retention | seconds_per_remembered_card |
+|------------------------------|----------------|-------------|-------------------|-------------------------|------------------------------|
+| knowledge_gain_delayed_desc  | 20000          | 96464.0     | 16192             | 0.751                   | 5.96                         |
+| knowledge_gain_discounted_desc | 20000        | 96423.0     | 16030             | 0.728                   | 6.02                         |
+| difficulty_asc               | 20000          | 96519.0     | 15737             | 0.793                   | 6.13                         |
+| PSG_desc                     | 20000          | 96490.0     | 15701             | 0.784                   | 6.15                         |
+| due_date_asc                 | 20000          | 96508.0     | 15619             | 0.678                   | 6.18                         |
+| random                       | 20000          | 96483.0     | 15470             | 0.700                   | 6.24                         |
+| retrievability_asc           | 20000          | 96512.0     | 15141             | 0.715                   | 6.37                         |
+| stability_desc               | 20000          | 96487.0     | 15049             | 0.792                   | 6.41                         |
+| retrievability_desc          | 20000          | 96473.0     | 14926             | 0.797                   | 6.46                         |
+| add_order_desc               | 20000          | 96508.0     | 14902             | 0.793                   | 6.48                         |
+| PRL_desc                     | 20000          | 96469.0     | 14383             | 0.793                   | 6.71                         |
+| interval_asc                 | 20000          | 96470.0     | 14338             | 0.792                   | 6.73                         |
+| stability_asc                | 20000          | 96424.0     | 14325             | 0.793                   | 6.73                         |
+| add_order_asc                | 20000          | 96501.0     | 13611             | 0.773                   | 7.09                         |
+| interval_desc                | 20000          | 96474.0     | 13549             | 0.778                   | 7.12                         |
+| difficulty_desc              | 20000          | 96531.0     | 13172             | 0.789                   | 7.33                         |
+
 ---
 
 ## Long-term knowledge computation
