@@ -18,7 +18,6 @@ if __name__ == "__main__":
     import time
 
     tic = time.time()
-    from datetime import datetime, timedelta
 
     today = time.time() // 86400
     due = 30

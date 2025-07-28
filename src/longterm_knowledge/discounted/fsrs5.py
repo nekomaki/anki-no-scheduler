@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 try:
     from ...fsrs.fsrs5 import DECAY, FSRS5
     from ...fsrs.types import State

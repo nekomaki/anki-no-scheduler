@@ -14,7 +14,7 @@ def toggle_reorder_cards():
     update_reordering()
 
 
-menu = mw.form.menuTools.addMenu("Review Order by Knowledge Gain")
+menu = mw.form.menuTools.addMenu("No Scheduler - Review Order by Long-term Knowledge Gain")
 
 action_reorder_cards = QAction("Order cards by knowledge gain", mw, checkable=True)
 action_reorder_cards.setChecked(config.reorder_cards)

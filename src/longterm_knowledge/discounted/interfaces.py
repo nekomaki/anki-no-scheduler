@@ -1,5 +1,5 @@
 from functools import cache
-from typing import Optional, Protocol
+from typing import Protocol
 
 try:
     from ...fsrs.interfaces import FSRSProtocol
