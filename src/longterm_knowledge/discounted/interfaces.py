@@ -1,15 +1,17 @@
 from functools import cache
-from typing import Protocol
+from typing import Optional, Protocol
 
 try:
-    from ..fsrs.types import FSRSProtocol, State
+    from ...fsrs.interfaces import FSRSProtocol
+    from ...fsrs.types import State
 except ImportError:
-    from fsrs.types import FSRSProtocol, State
+    from fsrs.interfaces import FSRSProtocol
+    from fsrs.types import State
 
-MAX_DEPTH = 10
+from . import MAX_DEPTH
 
 
-class KnowledgeProtocol(FSRSProtocol, Protocol):
+class KnowledgeDiscountedProtocol(FSRSProtocol, Protocol):
     def calc_knowledge(self, state: State, elapsed_days: float) -> float: ...
     def _calc_reviewed_knowledge(self, state: State, elapsed_days: float) -> float: ...
     def exp_knowledge_gain(self, state: State, elapsed_days: float) -> float: ...
@@ -20,12 +22,16 @@ class KnowledgeProtocol(FSRSProtocol, Protocol):
     ) -> float: ...
 
 
-class KnowledgeMixin:
-    def calc_knowledge(self, state: State, elapsed_days: float) -> float:
+class KnowledgeDiscountedMixin:
+    def calc_knowledge(
+        self: KnowledgeDiscountedProtocol,
+        state: State,
+        elapsed_days: float,
+    ) -> float:
         raise NotImplementedError
 
     def _calc_reviewed_knowledge(
-        self: KnowledgeProtocol, state: State, elapsed_days: float
+        self: KnowledgeDiscountedProtocol, state: State, elapsed_days: float
     ) -> float:
         next_states = self.simulate(state, elapsed_days)
 
@@ -38,7 +44,7 @@ class KnowledgeMixin:
 
     @cache
     def exp_knowledge_gain(
-        self: KnowledgeProtocol, state: State, elapsed_days: float
+        self: KnowledgeDiscountedProtocol, state: State, elapsed_days: float
     ) -> float:
         current_knowledge = self.calc_knowledge(state, elapsed_days=elapsed_days)
         reviewed_knowledge = self._calc_reviewed_knowledge(
@@ -49,7 +55,7 @@ class KnowledgeMixin:
 
     @cache
     def exp_knowledge_gain_future(
-        self: KnowledgeProtocol,
+        self: KnowledgeDiscountedProtocol,
         state: State,
         elapsed_days: float,
     ) -> float:
@@ -57,6 +63,9 @@ class KnowledgeMixin:
         Calculate the expected knowledge gain including a few future reviews with FSRS simulation.
         """
         stk = [(state, self.exp_knowledge_gain(state, elapsed_days), 1, 1.0)]
+
+        if MAX_DEPTH == 0:
+            return stk[0][1]
 
         result = 0.0
 

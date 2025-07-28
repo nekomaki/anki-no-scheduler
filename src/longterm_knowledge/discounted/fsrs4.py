@@ -1,35 +1,24 @@
-from typing import TYPE_CHECKING
-
 try:
-    from ...fsrs.fsrs4 import DECAY, FSRS4
+    from ...fsrs.fsrs4 import DECAY, FACTOR, FSRS4
     from ...fsrs.types import State
-    from ..knowledge import KnowledgeMixin
 except ImportError:
-    from fsrs.fsrs4 import DECAY, FSRS4
+    from fsrs.fsrs4 import DECAY, FACTOR, FSRS4
     from fsrs.types import State
-    from longterm_knowledge.knowledge import KnowledgeMixin
-
-if TYPE_CHECKING:
-
-    class _FSRS4(FSRS4):
-        pass
-
-else:
-    _FSRS4 = FSRS4
 
 from .fsrs6 import _calc_knowledge_cached as _calc_knowledge_cached_v6
+from .interfaces import KnowledgeDiscountedMixin
 
 
-class FSRS4Knowledge(KnowledgeMixin, _FSRS4):
+class FSRS4KnowledgeDiscounted(KnowledgeDiscountedMixin, FSRS4):
     def calc_knowledge(self, state: State, elapsed_days: float) -> float:
         return _calc_knowledge_cached_v6(
-            state.stability, decay=DECAY, elapsed_days=elapsed_days
+            state.stability, decay=DECAY, factor=FACTOR, elapsed_days=elapsed_days
         )
 
 
 if __name__ == "__main__":
     state = State(1.0, 1.0)
-    fsrs = FSRS4Knowledge.from_tuple(
+    fsrs = FSRS4KnowledgeDiscounted.from_tuple(
         (
             1.0191,
             8.2268,

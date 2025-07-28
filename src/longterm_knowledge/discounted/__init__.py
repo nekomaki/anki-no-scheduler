@@ -1,1 +1,3 @@
 GAMMA = 0.99
+TOL = 1e-5
+MAX_DEPTH = 1

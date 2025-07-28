@@ -5,3 +5,4 @@ src/meta.json
 .pytest_cache/
 dist/
 tmp/
+*.tsv

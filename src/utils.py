@@ -22,10 +22,12 @@ from aqt import mw
 
 from .config_manager import get_config
 from .fsrs.types import State
-from .longterm_knowledge.discounted.fsrs4 import FSRS4Knowledge
-from .longterm_knowledge.discounted.fsrs5 import FSRS5Knowledge
-from .longterm_knowledge.discounted.fsrs6 import FSRS6Knowledge
-from .longterm_knowledge.knowledge import KnowledgeProtocol
+from .longterm_knowledge.discounted.fsrs4 import FSRS4KnowledgeDiscounted
+from .longterm_knowledge.discounted.fsrs5 import FSRS5KnowledgeDiscounted
+from .longterm_knowledge.discounted.fsrs6 import FSRS6KnowledgeDiscounted
+from .longterm_knowledge.discounted.interfaces import (
+    KnowledgeDiscountedProtocol,
+)
 
 BackendCard = cards_pb2.Card
 
@@ -72,19 +74,19 @@ def get_decay(card: Card):
 
 def get_valid_fsrs6(fsrs_params):
     if isinstance(fsrs_params, list) and len(fsrs_params) == 21:
-        return FSRS6Knowledge.from_list(fsrs_params)
+        return FSRS6KnowledgeDiscounted.from_list(fsrs_params)
     return None
 
 
 def get_valid_fsrs5(fsrs_params):
     if isinstance(fsrs_params, list) and len(fsrs_params) == 19:
-        return FSRS5Knowledge.from_list(fsrs_params)
+        return FSRS5KnowledgeDiscounted.from_list(fsrs_params)
     return None
 
 
 def get_valid_fsrs4(fsrs_params):
     if isinstance(fsrs_params, list) and len(fsrs_params) == 17:
-        return FSRS4Knowledge.from_list(fsrs_params)
+        return FSRS4KnowledgeDiscounted.from_list(fsrs_params)
     return None
 
 
@@ -94,7 +96,7 @@ def get_knowledge_gain(
     fsrs_params_v6 = deck_config.get("fsrsParams6")
     fsrs_params_v5_or_lower = deck_config.get("fsrsWeights")
 
-    fsrs: Optional[KnowledgeProtocol] = (
+    fsrs: Optional[KnowledgeDiscountedProtocol] = (
         get_valid_fsrs6(fsrs_params_v6)
         or get_valid_fsrs5(fsrs_params_v5_or_lower)
         or get_valid_fsrs4(fsrs_params_v5_or_lower)

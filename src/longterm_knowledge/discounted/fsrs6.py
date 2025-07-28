@@ -1,33 +1,17 @@
 import math
 from functools import cache
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 try:
     from ...fsrs.fsrs6 import FSRS6
     from ...fsrs.types import State
-    from ..knowledge import KnowledgeMixin
 except ImportError:
     from fsrs.fsrs6 import FSRS6
     from fsrs.types import State
-    from longterm_knowledge.knowledge import KnowledgeMixin
 
-from . import GAMMA
-
-if TYPE_CHECKING:
-
-    class _FSRS6(FSRS6):
-        pass
-
-else:
-    _FSRS6 = FSRS6
-
-# from . import GAMMA
+from . import GAMMA, TOL
+from .interfaces import KnowledgeDiscountedMixin
 from .utils import log_upper_gamma
-
-D_MIN, D_MAX = 1, 10
-S_MIN, S_MAX = 0.01, 36500
-
-TOL = 1e-5
 
 
 def _knowledge_integral(
@@ -83,7 +67,7 @@ def _calc_knowledge_cached(
     )
 
 
-class FSRS6Knowledge(KnowledgeMixin, _FSRS6):
+class FSRS6KnowledgeDiscounted(KnowledgeDiscountedMixin, FSRS6):
     def calc_knowledge(self, state: State, elapsed_days: float) -> float:
         return _calc_knowledge_cached(
             state.stability,
@@ -101,34 +85,34 @@ if __name__ == "__main__":
 
     tic = time.time()
 
-    # for i in range(100000):
-    fsrs = FSRS6Knowledge.from_list(
-        [
-            0.8457,
-            8.1627,
-            17.1531,
-            100.0000,
-            6.2004,
-            0.8907,
-            3.0530,
-            0.0282,
-            2.3039,
-            0.0302,
-            1.2036,
-            1.3832,
-            0.0883,
-            0.1358,
-            1.5999,
-            0.5648,
-            2.2040,
-            0.7055,
-            0.1141,
-            0.0916,
-            0.1000,
-        ]
-    )
-    retrivibility = fsrs.power_forgetting_curve(elapsed_days, state.stability)
-    knowledge_gain = fsrs.exp_knowledge_gain_future(state, elapsed_days)
+    for i in range(1000):
+        fsrs = FSRS6KnowledgeDiscounted.from_list(
+            [
+                0.8457,
+                8.1627,
+                17.1531,
+                100.0000,
+                6.2004,
+                0.8907,
+                3.0530,
+                0.0282,
+                2.3039,
+                0.0302,
+                1.2036,
+                1.3832,
+                0.0883,
+                0.1358,
+                1.5999,
+                0.5648,
+                2.2040,
+                0.7055,
+                0.1141,
+                0.0916,
+                0.1000,
+            ]
+        )
+        retrivibility = fsrs.power_forgetting_curve(elapsed_days, state.stability)
+        knowledge_gain = fsrs.exp_knowledge_gain_future(state, i)
     print(f"Expected knowledge gain: {knowledge_gain}")
     print(f"Retrievability: {retrivibility}")
 

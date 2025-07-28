@@ -3,28 +3,20 @@ from typing import TYPE_CHECKING
 try:
     from ...fsrs.fsrs5 import DECAY, FSRS5
     from ...fsrs.types import State
-    from ..knowledge import KnowledgeMixin
-    from .fsrs6 import FSRS6Knowledge
+    from .fsrs6 import FSRS6KnowledgeDiscounted
 except ImportError:
     from fsrs.fsrs5 import DECAY, FSRS5
     from fsrs.types import State
-    from longterm_knowledge.discounted.fsrs6 import FSRS6Knowledge
-    from longterm_knowledge.knowledge import KnowledgeMixin
+    from longterm_knowledge.discounted.fsrs6 import FSRS6KnowledgeDiscounted
 
-if TYPE_CHECKING:
-
-    class _FSRS5(FSRS5):
-        pass
-
-else:
-    _FSRS5 = FSRS5
+from .interfaces import KnowledgeDiscountedMixin
 
 
-class FSRS5Knowledge(KnowledgeMixin, _FSRS5):
-    _fsrs6: FSRS6Knowledge
+class FSRS5KnowledgeDiscounted(KnowledgeDiscountedMixin, FSRS5):
+    _fsrs6: FSRS6KnowledgeDiscounted
 
     def __init__(self, params: tuple[float, ...]):
-        fsrs6 = FSRS6Knowledge(params + (0.0, -DECAY))
+        fsrs6 = FSRS6KnowledgeDiscounted(params + (0.0, -DECAY))
         super().__init__(params=params, fsrs6=fsrs6)
 
     def calc_knowledge(self, state: State, elapsed_days: float) -> float:
