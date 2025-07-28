@@ -62,9 +62,8 @@ class KnowledgeDelayedMixin:
     ) -> float:
         assert self.due - today >= 0, "Due date must be in the future"
         return self.power_forgetting_curve(
-            elapsed_days + self.due - today, state.stability
+            elapsed_days + self.due - today + 1, state.stability
         )
-        # return self.power_forgetting_curve(600, state.stability)
 
     def _calc_reviewed_knowledge(
         self: KnowledgeDelayedProtocol, state: State, elapsed_days: float, today: float
@@ -88,9 +87,6 @@ class KnowledgeDelayedMixin:
         reviewed_knowledge = self._calc_reviewed_knowledge(
             state, elapsed_days=elapsed_days, today=today
         )
-        # if reviewed_knowledge - current_knowledge < 0:
-        # print(state, elapsed_days, today, reviewed_knowledge, current_knowledge)
-        #     assert False
 
         return reviewed_knowledge - current_knowledge
 
