@@ -51,6 +51,7 @@ if __name__ == "__main__":
     )
     # retrivibility = fsrs.power_forgetting_curve(elapsed_days, state.stability)
     day = 30
+    # knowledge_gain = fsrs.exp_knowledge_gain(state, elapsed_days=day, today=day)
     knowledge_gain = fsrs.exp_knowledge_gain_future(state, elapsed_days=day, today=day)
 
     print(f"Expected knowledge gain: {knowledge_gain}")

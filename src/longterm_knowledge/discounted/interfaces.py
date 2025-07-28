@@ -53,6 +53,51 @@ class KnowledgeDiscountedMixin:
 
         return reviewed_knowledge - current_knowledge
 
+    # @cache
+    # def exp_knowledge_gain_future(
+    #     self: KnowledgeDiscountedProtocol,
+    #     state: State,
+    #     elapsed_days: float,
+    # ) -> float:
+    #     """
+    #     Calculate the expected knowledge gain including a few future reviews with FSRS simulation.
+    #     """
+    #     stk = [(state, self.exp_knowledge_gain(state, elapsed_days), 1, 1.0)]
+
+    #     if MAX_DEPTH == 0:
+    #         return stk[0][1]
+
+    #     result = 0.0
+
+    #     while stk:
+    #         state, knowledge_gain_avg, length, prob = stk.pop()
+
+    #         next_states = self.simulate(state, elapsed_days)
+
+    #         for next_prob, next_state in next_states:
+    #             next_knowledge_gain = self.exp_knowledge_gain(
+    #                 next_state, elapsed_days=elapsed_days
+    #             )
+    #             if next_knowledge_gain > knowledge_gain_avg:
+    #                 next_knowledge_gain_avg = (
+    #                     knowledge_gain_avg * length + next_knowledge_gain
+    #                 ) / (length + 1)
+    #                 if length + 1 < MAX_DEPTH:
+    #                     stk.append(
+    #                         (
+    #                             next_state,
+    #                             next_knowledge_gain_avg,
+    #                             length + 1,
+    #                             prob * next_prob,
+    #                         )
+    #                     )
+    #                 else:
+    #                     result += prob * next_prob * next_knowledge_gain_avg
+    #             else:
+    #                 result += prob * next_prob * knowledge_gain_avg
+
+    #     return result
+
     @cache
     def exp_knowledge_gain_future(
         self: KnowledgeDiscountedProtocol,
@@ -62,7 +107,8 @@ class KnowledgeDiscountedMixin:
         """
         Calculate the expected knowledge gain including a few future reviews with FSRS simulation.
         """
-        stk = [(state, self.exp_knowledge_gain(state, elapsed_days), 1, 1.0)]
+        initial_kg = self.exp_knowledge_gain(state, elapsed_days)
+        stk = [(state, initial_kg, initial_kg, 1, 1.0)]
 
         if MAX_DEPTH == 0:
             return stk[0][1]
@@ -70,30 +116,31 @@ class KnowledgeDiscountedMixin:
         result = 0.0
 
         while stk:
-            state, knowledge_gain_avg, workload, prob = stk.pop()
+            state, kg_avg, last_kg, length, prob = stk.pop()
 
             next_states = self.simulate(state, elapsed_days)
 
             for next_prob, next_state in next_states:
-                next_knowledge_gain = self.exp_knowledge_gain(
+                next_kg = self.exp_knowledge_gain(
                     next_state, elapsed_days=elapsed_days
                 )
-                if next_knowledge_gain > knowledge_gain_avg:
-                    next_knowledge_gain_avg = (
-                        knowledge_gain_avg * workload + next_knowledge_gain
-                    ) / (workload + 1)
-                    if workload + 1 < MAX_DEPTH:
+                if next_kg > last_kg:
+                    next_kg_avg = (
+                        kg_avg * length + next_kg
+                    ) / (length + 1)
+                    if length + 1 < MAX_DEPTH:
                         stk.append(
                             (
                                 next_state,
-                                next_knowledge_gain_avg,
-                                workload + 1,
+                                next_kg_avg,
+                                next_kg,
+                                length + 1,
                                 prob * next_prob,
                             )
                         )
                     else:
-                        result += prob * next_prob * next_knowledge_gain_avg
+                        result += prob * next_prob * next_kg_avg
                 else:
-                    result += prob * next_prob * knowledge_gain_avg
+                    result += prob * next_prob * kg_avg
 
         return result
