@@ -6,11 +6,14 @@ T = TypeVar("T", bound="FSRSProtocol")
 
 
 class FSRSProtocol(Protocol):
-    @classmethod
-    def from_tuple(cls: Type[T], data: tuple[float, ...]) -> T: ...
+    decay: float
+    factor: float
 
     @classmethod
-    def from_list(cls: Type[T], data: list[float]) -> T: ...
+    def from_tuple(cls: Type[T], params: tuple[float, ...]) -> T: ...
+
+    @classmethod
+    def from_list(cls: Type[T], params: list[float]) -> T: ...
 
     def simulate(
         self,

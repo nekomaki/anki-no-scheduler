@@ -43,8 +43,9 @@ class KnowledgeDelayedProtocol(FSRSProtocol, Protocol):
 
 
 class KnowledgeDelayedMixin:
+    due: float
+
     @classmethod
-    @cache
     def from_tuple_with_due(cls: Type[T], params: tuple[float, ...], due: float) -> T:
         inst = cls.from_tuple(params)
         inst.due = due
@@ -54,6 +55,7 @@ class KnowledgeDelayedMixin:
     def from_list_with_due(cls: Type[T], params: list[float], due: float) -> T:
         return cls.from_tuple_with_due(tuple(params), due)
 
+    @cache
     def calc_knowledge(
         self: KnowledgeDelayedProtocol,
         state: State,
@@ -98,8 +100,7 @@ class KnowledgeDelayedMixin:
         """
         Calculate the expected knowledge gain including a few future reviews with FSRS simulation.
         """
-        initial_kg = self.exp_knowledge_gain(state, elapsed_days, today)
-        stk = [(state, initial_kg, initial_kg, 1, 1.0)]
+        stk = [(state, self.exp_knowledge_gain(state, elapsed_days, today), 1, 1.0)]
 
         # Move the first check to the top and length check before pushing to the stack
         if MAX_DEPTH == 0 or today + elapsed_days > self.due:
@@ -108,25 +109,23 @@ class KnowledgeDelayedMixin:
         result = 0.0
 
         while stk:
-            state, kg_avg, last_kg, length, prob = stk.pop()
+            state, kg_avg, length, prob = stk.pop()
 
             next_states = self.simulate(state, elapsed_days)
             next_day = today + length * elapsed_days
 
             for next_prob, next_state in next_states:
+                # HACK: This is a workaround to ensure the same knowledge scale
                 next_kg = self.exp_knowledge_gain(
-                    next_state, elapsed_days=elapsed_days, today=next_day
+                    next_state, elapsed_days=elapsed_days, today=today
                 )
-                if next_kg > last_kg:
-                    next_kg_avg = (
-                        kg_avg * length + next_kg
-                    ) / (length + 1)
+                if next_kg > kg_avg:
+                    next_kg_avg = (kg_avg * length + next_kg) / (length + 1)
                     if length + 1 < MAX_DEPTH and next_day + elapsed_days <= self.due:
                         stk.append(
                             (
                                 next_state,
                                 next_kg_avg,
-                                next_kg,
                                 length + 1,
                                 prob * next_prob,
                             )

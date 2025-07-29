@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 
 
 def lower_gamma_series(a: float, x: float, max_iter=200, tol=1e-14) -> float:
@@ -71,3 +72,47 @@ def log_upper_gamma(a: float, x: float, max_iter=200, tol=1e-14) -> float:
         return math.log(Q) + math.lgamma(a)
     else:
         return log_upper_gamma_cf(a, x, max_iter, tol)
+
+
+def knowledge_discounted_integral(
+    stability: float,
+    decay: float,
+    factor: float,
+    t_begin: Optional[float] = None,
+    t_end: Optional[float] = None,
+    gamma: float = 0.99,
+    tol: float = 1e-14,
+):
+    if stability == 0:
+        return 0.0
+
+    alpha = stability / factor
+    lgamma = -math.log(gamma)
+
+    def compute(x0, exponent):
+        return math.exp(
+            exponent * lgamma
+            + log_upper_gamma(decay + 1, x0, tol=tol)
+            - decay * (math.log(alpha) + math.log(lgamma))
+        )
+
+    # Case 1: full integral from 0 to ∞
+    if t_begin is None and t_end is None:
+        x0 = alpha * lgamma
+        return compute(x0, alpha)
+
+    # Case 2: integral from t_begin to ∞
+    elif t_end is None and t_begin is not None:
+        x0 = (alpha + t_begin) * lgamma
+        return compute(x0, alpha + t_begin)
+
+    # Case 3: integral from 0 to t_end
+    elif t_end is not None:
+        if t_begin is None:
+            t_begin = 0.0
+        x0 = (alpha + t_begin) * lgamma
+        return compute(x0, alpha + t_begin) - gamma ** (t_end - t_begin) * compute(
+            (alpha + t_end) * lgamma, alpha + t_end
+        )
+    else:
+        raise NotImplementedError

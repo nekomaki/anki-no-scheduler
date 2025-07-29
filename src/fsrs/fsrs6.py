@@ -40,13 +40,10 @@ class FSRS6(FSRS):
         self,
         state: State,
         t_review: float,
-        retention: Optional[float] = None,
     ) -> list[tuple[float, State]]:
         w = self.params
-        (D, S), R = (state.difficulty, state.stability), retention
-
-        if R is None:
-            R = self.power_forgetting_curve(t_review, S)
+        D, S = state.difficulty, state.stability
+        R = self.power_forgetting_curve(t_review, S)
 
         # We only consider two outcomes
         ratings = [1, 3]
