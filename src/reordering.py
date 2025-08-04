@@ -26,7 +26,7 @@ queue_to_index = {
 }
 
 
-def _key_exp_knowledge_gain(x):
+def _exp_knowledge_gain(x):
     # There is no need to cache this function, as it is only called once per card
     card = x.card
     deck_id = card.original_deck_id or card.deck_id
@@ -34,20 +34,17 @@ def _key_exp_knowledge_gain(x):
     if not card.memory_state:
         return 0
 
-    state = State(
-        float(card.memory_state.difficulty), float(card.memory_state.stability)
-    )
+    state = State(float(card.memory_state.difficulty), float(card.memory_state.stability))
 
     elapsed_days = cache["today"] - get_last_review_date(card)
 
     deck_config = mw.col.decks.config_dict_for_deck_id(deck_id)
 
     knowledge_gain = (
-        get_knowledge_gain(state, elapsed_days=elapsed_days, deck_config=deck_config)
-        or 0.0
+        get_knowledge_gain(state, elapsed_days=elapsed_days, deck_config=deck_config) or 0.0
     )
 
-    return -knowledge_gain
+    return knowledge_gain
 
 
 def _get_next_v3_card_patched(self) -> None:
@@ -94,7 +91,7 @@ def _get_next_v3_card_patched(self) -> None:
 
             # Sort the cards by expected knowledge gain
             cache["today"] = mw.col.sched.today
-            sorted_cards = sorted(cards, key=_key_exp_knowledge_gain)
+            sorted_cards = sorted(cards, key=_exp_knowledge_gain, reverse=True)
 
             # Filter cards based on the counts
             filtered_counts = [0, 0, 0]
@@ -125,10 +122,7 @@ def _get_next_v3_card_patched(self) -> None:
 
 
 def _on_card_answered(reviewer, card, ease):
-    if (
-        getattr(reviewer, "_cards_cached", None)
-        and reviewer._cards_cached[-1].card.id == card.id
-    ):
+    if getattr(reviewer, "_cards_cached", None) and reviewer._cards_cached[-1].card.id == card.id:
         reviewer._cards_cached.pop()
     else:
         reviewer._cards_cached = None
@@ -136,10 +130,7 @@ def _on_card_answered(reviewer, card, ease):
 
 def _on_card_buried(id: int) -> None:
     reviewer = mw.reviewer
-    if (
-        getattr(reviewer, "_cards_cached", None)
-        and reviewer._cards_cached[-1].card.id == id
-    ):
+    if getattr(reviewer, "_cards_cached", None) and reviewer._cards_cached[-1].card.id == id:
         reviewer._cards_cached.pop()
     else:
         reviewer._cards_cached = None
@@ -147,10 +138,7 @@ def _on_card_buried(id: int) -> None:
 
 def _on_card_suspended(id: int) -> None:
     reviewer = mw.reviewer
-    if (
-        getattr(reviewer, "_cards_cached", None)
-        and reviewer._cards_cached[-1].card.id == id
-    ):
+    if getattr(reviewer, "_cards_cached", None) and reviewer._cards_cached[-1].card.id == id:
         reviewer._cards_cached.pop()
     else:
         reviewer._cards_cached = None

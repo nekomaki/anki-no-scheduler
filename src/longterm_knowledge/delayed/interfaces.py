@@ -17,9 +17,7 @@ class KnowledgeDelayedProtocol(FSRSProtocol, Protocol):
     due: float
 
     @classmethod
-    def from_tuple_with_due(
-        cls: Type[T], params: tuple[float, ...], due: float
-    ) -> T: ...
+    def from_tuple_with_due(cls: Type[T], params: tuple[float, ...], due: float) -> T: ...
     @classmethod
     def from_list_with_due(cls: Type[T], params: list[float], due: float) -> T: ...
     def calc_knowledge(
@@ -31,9 +29,7 @@ class KnowledgeDelayedProtocol(FSRSProtocol, Protocol):
     def _calc_reviewed_knowledge(
         self, state: State, elapsed_days: float, today: float
     ) -> float: ...
-    def exp_knowledge_gain(
-        self, state: State, elapsed_days: float, today: float
-    ) -> float: ...
+    def exp_knowledge_gain(self, state: State, elapsed_days: float, today: float) -> float: ...
     def exp_knowledge_gain_future(
         self,
         state: State,
@@ -64,9 +60,7 @@ class KnowledgeDelayedMixin:
     ) -> float:
         if today > self.due:
             raise ValueError("Due date must be in the future")
-        return self.power_forgetting_curve(
-            elapsed_days + self.due - today + 1, state.stability
-        )
+        return self.power_forgetting_curve(elapsed_days + self.due - today + 1, state.stability)
 
     def _calc_reviewed_knowledge(
         self: KnowledgeDelayedProtocol, state: State, elapsed_days: float, today: float
@@ -84,9 +78,7 @@ class KnowledgeDelayedMixin:
     def exp_knowledge_gain(
         self: KnowledgeDelayedProtocol, state: State, elapsed_days: float, today: float
     ) -> float:
-        current_knowledge = self.calc_knowledge(
-            state, elapsed_days=elapsed_days, today=today
-        )
+        current_knowledge = self.calc_knowledge(state, elapsed_days=elapsed_days, today=today)
         reviewed_knowledge = self._calc_reviewed_knowledge(
             state, elapsed_days=elapsed_days, today=today
         )

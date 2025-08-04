@@ -58,17 +58,12 @@ class FSRS6(FSRS):
             new_difficulty = w[7] * D04 + (1 - w[7]) * difficulty_prime
 
             if t_review < 1:
-                new_stability = (
-                    S * math.exp(w[17] * (rating - 3 + w[18])) * S ** (-w[19])
-                )
+                new_stability = S * math.exp(w[17] * (rating - 3 + w[18])) * S ** (-w[19])
             else:
                 if rating == 1:
                     # Forget
                     new_stability = (
-                        w[11]
-                        * (D ** -w[12])
-                        * ((S + 1) ** w[13] - 1)
-                        * math.exp(w[14] * (1 - R))
+                        w[11] * (D ** -w[12]) * ((S + 1) ** w[13] - 1) * math.exp(w[14] * (1 - R))
                     )
                 else:
                     new_stability = S * (

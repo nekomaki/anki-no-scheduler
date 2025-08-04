@@ -61,10 +61,7 @@ class FSRS4(FSRS):
             if rating == 1:
                 # Forget
                 new_stability = (
-                    w[11]
-                    * (D ** -w[12])
-                    * ((S + 1) ** w[13] - 1)
-                    * math.exp(w[14] * (1 - R))
+                    w[11] * (D ** -w[12]) * ((S + 1) ** w[13] - 1) * math.exp(w[14] * (1 - R))
                 )
             else:
                 new_stability = S * (

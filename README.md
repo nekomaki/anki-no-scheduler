@@ -7,7 +7,7 @@ This addon reorders your Anki queue by **expected knowledge gain** to maximize l
 ## Usage
 
 1. Enable FSRS and this addon in Anki.
-2. Set the desired retention to 0.9 or higher in the deck's FSRS settings.
+2. Set the desired retention to 0.9 in the deck's FSRS settings.
 3. Set your preferred daily learning and review limits.
 4. Start learning.
 5. Increase learning/review limits in Custom Study if you want to learn more.

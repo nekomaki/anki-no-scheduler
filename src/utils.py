@@ -25,9 +25,7 @@ from .fsrs.types import State
 from .longterm_knowledge.discounted.fsrs4 import FSRS4KnowledgeDiscounted
 from .longterm_knowledge.discounted.fsrs5 import FSRS5KnowledgeDiscounted
 from .longterm_knowledge.discounted.fsrs6 import FSRS6KnowledgeDiscounted
-from .longterm_knowledge.discounted.interfaces import (
-    KnowledgeDiscountedProtocol,
-)
+from .longterm_knowledge.discounted.interfaces import KnowledgeDiscountedProtocol
 
 BackendCard = cards_pb2.Card
 
@@ -43,8 +41,7 @@ def filter_revlogs(
 ) -> list[CardStatsResponse.StatsRevlogEntry]:
     return list(
         filter(
-            lambda x: x.button_chosen >= 1
-            and (x.review_kind != REVLOG_CRAM or x.ease != 0),
+            lambda x: x.button_chosen >= 1 and (x.review_kind != REVLOG_CRAM or x.ease != 0),
             revlogs,
         )
     )
@@ -55,8 +52,7 @@ def get_last_review_date(card: Card):
     try:
         last_revlog = filter_revlogs(revlogs)[0]
         last_review_date = (
-            math.ceil((last_revlog.time - mw.col.sched.day_cutoff) / 86400)
-            + mw.col.sched.today
+            math.ceil((last_revlog.time - mw.col.sched.day_cutoff) / 86400) + mw.col.sched.today
         )
     except IndexError:
         if isinstance(card, BackendCard):
@@ -66,6 +62,10 @@ def get_last_review_date(card: Card):
             due = card.odue if card.odid else card.due
             last_review_date = due - card.ivl
     return last_review_date
+
+
+def get_elapsed_days(card: Card) -> float:
+    return mw.col.sched.today - get_last_review_date(card)
 
 
 def get_decay(card: Card):
@@ -91,7 +91,7 @@ def get_valid_fsrs4(fsrs_params):
 
 
 def get_knowledge_gain(
-    state: State, elapsed_days: int, deck_config: dict[str, list[float]]
+    state: State, elapsed_days: float, deck_config: dict[str, list[float]]
 ) -> Optional[float]:
     fsrs_params_v6 = deck_config.get("fsrsParams6")
     fsrs_params_v5_or_lower = deck_config.get("fsrsWeights")
