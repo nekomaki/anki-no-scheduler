@@ -1,6 +1,5 @@
 import math
 from functools import cache
-from typing import Optional
 
 from . import FSRS
 from .types import State
@@ -17,6 +16,7 @@ class FSRS6(FSRS):
         super().__init__(params=params)
         self._decay = -params[20]
         self._factor = 0.9 ** (1 / self._decay) - 1
+        self._D04 = params[4] - math.exp(params[5] * (4 - 1)) + 1
 
     @property
     def decay(self) -> float:
@@ -48,14 +48,13 @@ class FSRS6(FSRS):
         # We only consider two outcomes
         ratings = [1, 3]
         probs = [1 - R, R]
-        D04 = w[4] - math.exp(w[5] * (4 - 1)) + 1
 
         res = []
         for prob, rating in zip(probs, ratings):
             # Compute new difficulty
             delta_difficulty = -w[6] * (rating - 3)
             difficulty_prime = D + delta_difficulty * (10 - D) / 9
-            new_difficulty = w[7] * D04 + (1 - w[7]) * difficulty_prime
+            new_difficulty = w[7] * self._D04 + (1 - w[7]) * difficulty_prime
 
             if t_review < 1:
                 new_stability = S * math.exp(w[17] * (rating - 3 + w[18])) * S ** (-w[19])
@@ -80,5 +79,103 @@ class FSRS6(FSRS):
             new_stability = min(S_MAX, max(S_MIN, new_stability))
 
             res.append((prob, State(new_difficulty, new_stability)))
+
+        return res
+
+    # @cache
+    # def simulate(
+    #     self,
+    #     state: State,
+    #     t_review: float,
+    # ) -> list[tuple[float, State]]:
+    #     w = self.params
+    #     D, S = state.difficulty, state.stability
+    #     R = self.power_forgetting_curve(t_review, S)
+
+    #     # We only consider two outcomes
+    #     ratings = [1, 3]
+    #     probs = [1 - R, R]
+
+    #     res = []
+    #     for prob, rating in zip(probs, ratings):
+    #         # Compute new difficulty
+    #         delta_difficulty = -w[6] * (rating - 3)
+    #         difficulty_prime = D + delta_difficulty * (10 - D) / 9
+    #         new_difficulty = w[7] * self._D04 + (1 - w[7]) * difficulty_prime
+
+    #         if t_review < 1:
+    #             new_stability = S * math.exp(w[17] * (rating - 3 + w[18])) * S ** (-w[19])
+    #         else:
+    #             if rating == 1:
+    #                 # Forget
+    #                 new_stability = (
+    #                     w[11] * (D ** -w[12]) * ((S + 1) ** w[13] - 1) * math.exp(w[14] * (1 - R))
+    #                 )
+    #             else:
+    #                 new_stability = S * (
+    #                     math.exp(w[8]) * (11 - D) * S ** (-w[9]) * (math.exp(w[10] * (1 - R)) - 1)
+    #                     + 1
+    #                 )
+
+    #         if new_stability < S_MIN:
+    #             new_stability = S_MIN
+    #         if new_stability > S_MAX:
+    #             new_stability = S_MAX
+
+    #         res.append((prob, State(new_difficulty, new_stability)))
+
+    #     return res
+
+    @cache
+    def simulate2(self, state: State, t_review: float) -> list[tuple[float, State]]:
+        w = self.params
+        D04 = self._D04
+        D = state.difficulty
+        S = state.stability
+        R = self.power_forgetting_curve(t_review, S)
+
+        res = []
+
+        # ----------------
+        # Outcome 1: rating = 1
+        # ----------------
+        delta_difficulty = 2 * w[6]
+        difficulty_prime = D + delta_difficulty * (10 - D) / 9
+        new_difficulty = w[7] * D04 + (1 - w[7]) * difficulty_prime
+
+        if t_review < 1:
+            new_stability = S * math.exp(w[17] * (1 - 3 + w[18])) * S ** (-w[19])
+        else:
+            new_stability = (
+                w[11] * (D ** -w[12]) * ((S + 1) ** w[13] - 1) * math.exp(w[14] * (1 - R))
+            )
+
+        if new_stability < S_MIN:
+            new_stability = S_MIN
+        elif new_stability > S_MAX:
+            new_stability = S_MAX
+
+        res.append((1 - R, State(new_difficulty, new_stability)))
+
+        # ----------------
+        # Outcome 2: rating = 3
+        # ----------------
+        delta_difficulty = 0
+        difficulty_prime = D + delta_difficulty * (10 - D) / 9
+        new_difficulty = w[7] * D04 + (1 - w[7]) * difficulty_prime
+
+        if t_review < 1:
+            new_stability = S * math.exp(w[17] * (3 - 3 + w[18])) * S ** (-w[19])
+        else:
+            new_stability = S * (
+                math.exp(w[8]) * (11 - D) * S ** (-w[9]) * (math.exp(w[10] * (1 - R)) - 1) + 1
+            )
+
+        if new_stability < S_MIN:
+            new_stability = S_MIN
+        elif new_stability > S_MAX:
+            new_stability = S_MAX
+
+        res.append((R, State(new_difficulty, new_stability)))
 
         return res

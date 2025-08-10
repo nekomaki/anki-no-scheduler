@@ -1,4 +1,3 @@
-import math
 from typing import Optional
 
 from anki import cards_pb2
@@ -18,6 +17,7 @@ from anki.stats import (
     REVLOG_REV,
 )
 from anki.stats_pb2 import CardStatsResponse
+from anki.utils import int_time
 from aqt import mw
 
 from .config_manager import get_config
@@ -47,25 +47,31 @@ def filter_revlogs(
     )
 
 
-def get_last_review_date(card: Card):
+def get_last_review_timestamp(card: Card) -> float:
+    """Return last review time as Unix timestamp in seconds."""
     revlogs = get_revlogs(card.id)
     try:
         last_revlog = filter_revlogs(revlogs)[0]
-        last_review_date = (
-            math.ceil((last_revlog.time - mw.col.sched.day_cutoff) / 86400) + mw.col.sched.today
-        )
+        # last_revlog.time is in seconds since epoch (backend API), or ms in SQL
+        return last_revlog.time
     except IndexError:
+        # No revlog — estimate based on due and interval
         if isinstance(card, BackendCard):
             due = card.original_due if card.deck_id else card.due
-            last_review_date = due - card.interval
+            days_ago = card.interval
         else:
             due = card.odue if card.odid else card.due
-            last_review_date = due - card.ivl
-    return last_review_date
+            days_ago = card.ivl
+        # Approximate: deck due date (sched.day_cutoff is today's start time)
+        due_date_timestamp = mw.col.sched.day_cutoff + (due - mw.col.sched.today) * 86400
+        return due_date_timestamp - days_ago * 86400
 
 
 def get_elapsed_days(card: Card) -> float:
-    return mw.col.sched.today - get_last_review_date(card)
+    """Return elapsed days since last review, as a float."""
+    last_review_ts = get_last_review_timestamp(card)
+    now_ts = int_time()
+    return (now_ts - last_review_ts) / 86400.0
 
 
 def get_decay(card: Card):

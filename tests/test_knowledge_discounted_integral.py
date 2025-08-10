@@ -120,7 +120,6 @@ def test_knowledge_integral_fsrs4():
             factor=FACTOR,
             t_begin=30,
             t_end=365,
-            gamma=GAMMA,
             tol=1e-14,
         )
 
@@ -139,7 +138,6 @@ def test_knowledge_integral_scipy():
                 factor=factor,
                 t_begin=30,
                 t_end=365,
-                gamma=GAMMA,
                 tol=1e-14,
             )
             knowledge_scipy = _knowledge_integral_scipy(
@@ -148,7 +146,6 @@ def test_knowledge_integral_scipy():
                 factor=factor,
                 t_begin=30,
                 t_end=365,
-                gamma=GAMMA,
             )
 
             assert math.isclose(

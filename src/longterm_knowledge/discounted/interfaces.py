@@ -8,7 +8,7 @@ except ImportError:
     from fsrs.interfaces import FSRSProtocol
     from fsrs.types import State
 
-from . import GAMMA, MAX_DEPTH, TOL
+from . import MAX_DEPTH, TOL
 from .utils import knowledge_discounted_integral
 
 
@@ -33,7 +33,6 @@ class KnowledgeDiscountedMixin:
             decay=self.decay,
             factor=self.factor,
             t_begin=elapsed_days,
-            gamma=GAMMA,
             tol=TOL,
         )
 

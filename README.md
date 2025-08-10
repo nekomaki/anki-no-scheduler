@@ -96,10 +96,10 @@ where
 
 - $\alpha = -\frac{\text{stability}}{\text{FACTOR}}$
 
-For FSRS 6, the EMA knowledge is given by:
+For FSRS 6, the discounted knowledge is given by:
 
 $$
-J_{\text{EMA}}(\text{card}, T; \gamma) = \gamma^{\alpha-T} (\alpha\log\gamma)^{-D} \cdot \Gamma(D+1, (\alpha - T)\log\gamma)
+J_{\text{dis}}(\text{card}, T; \gamma) = \gamma^{\alpha-T} (\alpha\log\gamma)^{-D} \cdot \Gamma(D+1, (\alpha - T)\log\gamma)
 $$
 
 where

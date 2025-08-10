@@ -3,12 +3,13 @@ from anki.cards import Card
 from anki.cards_pb2 import FsrsMemoryState
 from anki.scheduler.v3 import QueuedCards
 from anki.scheduler.v3 import Scheduler as V3Scheduler
+from anki.utils import int_time
 from aqt import gui_hooks, mw
 from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config_manager import get_config
 from .fsrs.types import State
-from .utils import get_knowledge_gain, get_last_review_date
+from .utils import get_knowledge_gain, get_last_review_timestamp
 
 Learning = anki.scheduler_pb2.SchedulingState.Learning
 Review = anki.scheduler_pb2.SchedulingState.Review
@@ -36,7 +37,7 @@ def _exp_knowledge_gain(x):
 
     state = State(float(card.memory_state.difficulty), float(card.memory_state.stability))
 
-    elapsed_days = cache["today"] - get_last_review_date(card)
+    elapsed_days = (cache.get("now", int_time()) - get_last_review_timestamp(card)) / 86400.0
 
     deck_config = mw.col.decks.config_dict_for_deck_id(deck_id)
 
@@ -70,7 +71,7 @@ def _get_next_v3_card_patched(self) -> None:
             or getattr(self, "_deck_id_cached", None) != deck_id
             or sum(counts[1:]) != len(self._cards_cached)
             or counts[queue_to_index[self._cards_cached[-1].queue]] <= 0
-            or mw.col.sched.today != cache.get("today", None)
+            or abs(cache["now"] - int_time()) >= 86400.0
         ):
             # Refresh the cache
             self._deck_id_cached = deck_id
@@ -90,7 +91,7 @@ def _get_next_v3_card_patched(self) -> None:
             ]
 
             # Sort the cards by expected knowledge gain
-            cache["today"] = mw.col.sched.today
+            cache["now"] = int_time()
             sorted_cards = sorted(cards, key=_exp_knowledge_gain, reverse=True)
 
             # Filter cards based on the counts
