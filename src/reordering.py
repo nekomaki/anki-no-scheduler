@@ -9,7 +9,7 @@ from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config_manager import get_config
 from .fsrs.types import State
-from .utils import get_knowledge_gain, get_last_review_timestamp
+from .utils import get_fsrs, get_knowledge_gain, get_last_review_timestamp
 
 Learning = anki.scheduler_pb2.SchedulingState.Learning
 Review = anki.scheduler_pb2.SchedulingState.Review
@@ -67,14 +67,14 @@ def _get_next_v3_card_patched(self) -> None:
         deck_id = self.mw.col.decks.current()['id']
 
         if (
-            getattr(self, "_cards_cached", None) is None
-            or getattr(self, "_deck_id_cached", None) != deck_id
-            or sum(counts[1:]) != len(self._cards_cached)
-            or counts[queue_to_index[self._cards_cached[-1].queue]] <= 0
+            cache.get("cards_cached") is None
+            or cache.get("deck_id_cached") != deck_id
+            or sum(counts[1:]) != len(cache.get("cards_cached", []))
+            or counts[queue_to_index[cache.get("cards_cached", [])[-1].queue]] <= 0
             or abs(cache["now"] - int_time()) >= 86400.0
         ):
             # Refresh the cache
-            self._deck_id_cached = deck_id
+            cache["deck_id_cached"] = deck_id
 
             # Fetch all cards
             extend_limits = self.mw.col.card_count()
@@ -123,26 +123,24 @@ def _get_next_v3_card_patched(self) -> None:
 
 
 def _on_card_answered(reviewer, card, ease):
-    if getattr(reviewer, "_cards_cached", None) and reviewer._cards_cached[-1].card.id == card.id:
-        reviewer._cards_cached.pop()
+    if cache.get("cards_cached") and cache["cards_cached"][-1].id == card.id:
+        cache["cards_cached"].pop()
     else:
-        reviewer._cards_cached = None
+        cache["cards_cached"] = None
 
 
 def _on_card_buried(id: int) -> None:
-    reviewer = mw.reviewer
-    if getattr(reviewer, "_cards_cached", None) and reviewer._cards_cached[-1].card.id == id:
-        reviewer._cards_cached.pop()
+    if cache.get("cards_cached") and cache["cards_cached"][-1].id == id:
+        cache["cards_cached"].pop()
     else:
-        reviewer._cards_cached = None
+        cache["cards_cached"] = None
 
 
 def _on_card_suspended(id: int) -> None:
-    reviewer = mw.reviewer
-    if getattr(reviewer, "_cards_cached", None) and reviewer._cards_cached[-1].card.id == id:
-        reviewer._cards_cached.pop()
+    if cache.get("cards_cached") and cache["cards_cached"][-1].id == id:
+        cache["cards_cached"].pop()
     else:
-        reviewer._cards_cached = None
+        cache["cards_cached"] = None
 
 
 def _on_card_will_show(text: str, card: Card, kind: str) -> str:

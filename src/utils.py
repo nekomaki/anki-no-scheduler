@@ -95,10 +95,7 @@ def get_valid_fsrs4(fsrs_params):
         return FSRS4KnowledgeDiscounted.from_list(fsrs_params)
     return None
 
-
-def get_knowledge_gain(
-    state: State, elapsed_days: float, deck_config: dict[str, list[float]]
-) -> Optional[float]:
+def get_fsrs(deck_config: dict[str, list[float]]) -> Optional[KnowledgeDiscountedProtocol]:
     fsrs_params_v6 = deck_config.get("fsrsParams6")
     fsrs_params_v5_or_lower = deck_config.get("fsrsWeights")
 
@@ -107,6 +104,14 @@ def get_knowledge_gain(
         or get_valid_fsrs5(fsrs_params_v5_or_lower)
         or get_valid_fsrs4(fsrs_params_v5_or_lower)
     )
+
+    return fsrs
+
+
+def get_knowledge_gain(
+    state: State, elapsed_days: float, deck_config: dict[str, list[float]]
+) -> Optional[float]:
+    fsrs = get_fsrs(deck_config)
 
     if fsrs is None:
         return None
