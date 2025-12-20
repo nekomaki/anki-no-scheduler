@@ -27,6 +27,8 @@ class FSRS6(FSRS):
         return self._factor
 
     def power_forgetting_curve(self, t: float, s: float) -> float:
+        if s <= 0:
+            return 0.0
         return (1 + self._factor * t / s) ** self._decay
 
     def interval_from_retention(self, state: State, retention: float) -> float:

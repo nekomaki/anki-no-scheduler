@@ -1,4 +1,5 @@
 from anki import hooks
+from anki.scheduler.v3 import QueuedCards
 from anki.template import TemplateRenderContext, TemplateRenderOutput
 from aqt import mw
 
@@ -18,8 +19,10 @@ def _on_card_did_render(output: TemplateRenderOutput, context: TemplateRenderCon
 
     deck_config = mw.col.decks.config_dict_for_deck_id(deck_id)
 
-    # Skip new cards
-    if not card.memory_state:
+    # Skip new, learning and relearning cards
+    if card.queue not in [QueuedCards.REVIEW]:
+        return
+    elif not card.memory_state:
         return
     else:
         state = State(

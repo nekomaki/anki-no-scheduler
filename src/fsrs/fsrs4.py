@@ -29,6 +29,8 @@ class FSRS4(FSRS):
 
     @classmethod
     def power_forgetting_curve(cls, t: float, s: float) -> float:
+        if s <= 0:
+            return 0.0
         return (1 + FACTOR * t / s) ** DECAY
 
     @classmethod

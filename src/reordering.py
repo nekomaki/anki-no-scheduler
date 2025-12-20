@@ -61,15 +61,13 @@ def _get_next_v3_card_patched(self) -> None:
 
     idx, counts = self._v3.counts()
 
-    # TODO: Relearning cards will refresh the cache
-    # TODO: Avoid reviewing cards too soon
-    if idx in (QueuedCards.LEARNING, QueuedCards.REVIEW):
+    if idx in [QueuedCards.REVIEW]:
         deck_id = self.mw.col.decks.current()['id']
 
         if (
             cache.get("cards_cached") is None
             or cache.get("deck_id_cached") != deck_id
-            or sum(counts[1:]) != len(cache.get("cards_cached", []))
+            or sum(counts[2:]) != len(cache.get("cards_cached", []))
             or counts[queue_to_index[cache.get("cards_cached", [])[-1].queue]] <= 0
             or abs(cache["now"] - int_time()) >= 86400.0
         ):
@@ -87,7 +85,7 @@ def _get_next_v3_card_patched(self) -> None:
             cards = [
                 card
                 for card in output_all.cards
-                if card.queue in (QueuedCards.LEARNING, QueuedCards.REVIEW)
+                if card.queue in [QueuedCards.REVIEW]
             ]
 
             # Sort the cards by expected knowledge gain
@@ -186,16 +184,23 @@ def _on_card_will_show(text: str, card: Card, kind: str) -> str:
             )
         elif kind == "relearning":
             scheduled_days = normal.relearning.review.scheduled_days
-            normal.ClearField(kind)
-            normal.review.CopyFrom(
-                Review(
-                    scheduled_days=scheduled_days,
-                    memory_state=FsrsMemoryState(
-                        difficulty=state.difficulty,
-                        stability=state.stability,
-                    ),
-                )
+
+            has_learning_steps = (
+                normal.relearning.HasField("learning")
+                and normal.relearning.learning.remaining_steps > 0
             )
+
+            if not has_learning_steps:
+                normal.ClearField(kind)
+                normal.review.CopyFrom(
+                    Review(
+                        scheduled_days=scheduled_days,
+                        memory_state=FsrsMemoryState(
+                            difficulty=state.difficulty,
+                            stability=state.stability,
+                        ),
+                    )
+                )
 
     _update_normal(mw.reviewer._v3.states.again.normal)
     _update_normal(mw.reviewer._v3.states.hard.normal)
