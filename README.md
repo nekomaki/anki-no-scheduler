@@ -22,7 +22,7 @@ The future estimator uses a few steps of FSRS simulation to predict the knowledg
 
 ## Features
 
-- Reorders **learning** and **review** cards within the daily queue.
+- Reorders **review** cards within the daily queue.
 - Displays **expected knowledge gain** for each card.
 - Estimates knowledge gain from future reviews.
 - Compatible with FSRS 4.5, 5 and 6.

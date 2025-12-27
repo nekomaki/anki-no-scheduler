@@ -116,7 +116,7 @@ def get_knowledge_gain(
     if fsrs is None:
         return None
 
-    return fsrs.exp_knowledge_gain(state, elapsed_days)
+    return fsrs.exp_knowledge_gain(state, elapsed_days, lookahead=2)
 
 
 # def get_new_rating_probs(deck_id):

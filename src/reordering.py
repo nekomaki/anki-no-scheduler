@@ -1,3 +1,4 @@
+from json import tool
 import anki
 from anki.cards import Card
 from anki.cards_pb2 import FsrsMemoryState
@@ -9,7 +10,11 @@ from aqt.reviewer import Reviewer, V3CardInfo
 
 from .config_manager import get_config
 from .fsrs.types import State
-from .utils import get_fsrs, get_knowledge_gain, get_last_review_timestamp
+from .utils import (
+    get_fsrs,
+    get_knowledge_gain,
+    get_last_review_timestamp,
+)
 
 Learning = anki.scheduler_pb2.SchedulingState.Learning
 Review = anki.scheduler_pb2.SchedulingState.Review
@@ -44,7 +49,7 @@ def _exp_knowledge_gain(x):
     knowledge_gain = (
         get_knowledge_gain(state, elapsed_days=elapsed_days, deck_config=deck_config) or 0.0
     )
-
+    
     return knowledge_gain
 
 
@@ -82,13 +87,9 @@ def _get_next_v3_card_patched(self) -> None:
             self.mw.col.sched.extend_limits(0, -extend_limits)
 
             # Filter cards based on the queue
-            cards = [
-                card
-                for card in output_all.cards
-                if card.queue in [QueuedCards.REVIEW]
-            ]
+            cards = [card for card in output_all.cards if card.queue in [QueuedCards.REVIEW]]
 
-            # Sort the cards by expected knowledge gain
+            # Sort the cards
             cache["now"] = int_time()
             sorted_cards = sorted(cards, key=_exp_knowledge_gain, reverse=True)
 
@@ -102,12 +103,12 @@ def _get_next_v3_card_patched(self) -> None:
                     filtered_counts[index] += 1
 
             # Make a stack of the filtered cards
-            self._cards_cached = list(reversed(filtered_cards))
+            cache["cards_cached"] = list(reversed(filtered_cards))
         else:
             # Disable undo
             self.mw.col.sched.extend_limits(0, 0)
 
-        top_card = self._cards_cached[-1]
+        top_card = cache["cards_cached"][-1]
 
         # Update the V3CardInfo with the top card
         del self._v3.queued_cards.cards[:]
@@ -121,24 +122,18 @@ def _get_next_v3_card_patched(self) -> None:
 
 
 def _on_card_answered(reviewer, card, ease):
-    if cache.get("cards_cached") and cache["cards_cached"][-1].id == card.id:
+    if cache.get("cards_cached") and cache["cards_cached"][-1].card.id == card.id:
         cache["cards_cached"].pop()
-    else:
-        cache["cards_cached"] = None
 
 
 def _on_card_buried(id: int) -> None:
-    if cache.get("cards_cached") and cache["cards_cached"][-1].id == id:
+    if cache.get("cards_cached") and cache["cards_cached"][-1].card.id == id:
         cache["cards_cached"].pop()
-    else:
-        cache["cards_cached"] = None
 
 
 def _on_card_suspended(id: int) -> None:
-    if cache.get("cards_cached") and cache["cards_cached"][-1].id == id:
+    if cache.get("cards_cached") and cache["cards_cached"][-1].card.id == id:
         cache["cards_cached"].pop()
-    else:
-        cache["cards_cached"] = None
 
 
 def _on_card_will_show(text: str, card: Card, kind: str) -> str:

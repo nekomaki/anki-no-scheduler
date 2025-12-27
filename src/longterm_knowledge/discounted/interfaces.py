@@ -8,18 +8,25 @@ except ImportError:
     from fsrs.interfaces import FSRSProtocol
     from fsrs.types import State
 
-from . import MAX_DEPTH, TOL
+from . import GAMMA, MAX_DEPTH, TOL
 from .utils import knowledge_discounted_integral
 
 
 class KnowledgeDiscountedProtocol(FSRSProtocol, Protocol):
     def calc_knowledge(self, state: State, elapsed_days: float) -> float: ...
     def _calc_reviewed_knowledge(self, state: State, elapsed_days: float) -> float: ...
-    def exp_knowledge_gain(self, state: State, elapsed_days: float) -> float: ...
-    def exp_knowledge_gain_future(
+    def _calc_knowledge_gain(self, state: State, elapsed_days: float) -> float: ...
+    def _calc_knowledge_gain_future(
         self,
         state: State,
         elapsed_days: float,
+    ) -> float: ...
+    def exp_knowledge_gain(
+        self,
+        state: State,
+        elapsed_days: float,
+        future_estimator=False,
+        require_non_increasing=False,
     ) -> float: ...
 
 
@@ -49,22 +56,28 @@ class KnowledgeDiscountedMixin:
         return knowledge
 
     @cache
-    def exp_knowledge_gain(
+    def _calc_knowledge_gain(
         self: KnowledgeDiscountedProtocol, state: State, elapsed_days: float
     ) -> float:
         current_knowledge = self.calc_knowledge(state, elapsed_days=elapsed_days)
         reviewed_knowledge = self._calc_reviewed_knowledge(state, elapsed_days=elapsed_days)
+        knowledge_gain = reviewed_knowledge - current_knowledge
 
-        return reviewed_knowledge - current_knowledge
+        return knowledge_gain
 
     @cache
-    def exp_knowledge_gain_futurev1(
+    def _calc_knowledge_gain_futurev1(
         self: KnowledgeDiscountedProtocol,
         state: State,
         elapsed_days: float,
     ) -> float:
         """
         Calculate the expected knowledge gain including a few future reviews with FSRS simulation.
+        Arguments:
+            state: Memory state of the card.
+            elapsed_days: Elapsed days since the last review.
+        Returns:
+            Expected knowledge gain including future reviews.
         """
         stk = [(state, self.exp_knowledge_gain(state, elapsed_days), 1, 1.0)]
 
@@ -99,13 +112,18 @@ class KnowledgeDiscountedMixin:
         return result
 
     @cache
-    def exp_knowledge_gain_future(
+    def _calc_knowledge_gain_future(
         self: KnowledgeDiscountedProtocol,
         state: State,
         elapsed_days: float,
     ) -> float:
         """
         Calculate the expected knowledge gain including a few future reviews with FSRS simulation.
+        Arguments:
+            state: Memory state of the card.
+            elapsed_days: Elapsed days since the last review.
+        Returns:
+            Expected knowledge gain including future reviews.
         """
         if MAX_DEPTH == 0:
             return self.exp_knowledge_gain(state, elapsed_days=elapsed_days)
@@ -151,55 +169,76 @@ class KnowledgeDiscountedMixin:
         return result
 
     # @cache
-    # def exp_knowledge_gain_future(
+    # def _calc_knowledge_gain_future(
     #     self: KnowledgeDiscountedProtocol,
     #     state: State,
     #     elapsed_days: float,
     # ) -> float:
     #     """
     #     Calculate the expected knowledge gain including a few future reviews with FSRS simulation.
+    #     Arguments:
+    #         state: Memory state of the card.
+    #         elapsed_days: Elapsed days since the last review.
+    #     Returns:
+    #         Expected knowledge gain including future reviews.
     #     """
     #     if MAX_DEPTH == 0:
-    #         return self.exp_knowledge_gain(state, elapsed_days)
+    #         return self.exp_knowledge_gain(state, elapsed_days=elapsed_days)
 
-    #     next_states = self.simulate(state, elapsed_days)
-    #     current_knowledge = self.calc_knowledge(state, elapsed_days=elapsed_days)
-    #     next_kgs = [
-    #         self.calc_knowledge(next_state[1], elapsed_days=0) - current_knowledge
-    #         for next_state in next_states
-    #     ]
-    #     stk = [
-    #         (next_state, next_kg, 1, next_prob)
-    #         for (next_prob, next_state), next_kg in zip(next_states, next_kgs)
-    #     ]
+    #     initial_knowledge = self.calc_knowledge(state, elapsed_days=elapsed_days)
+    #     stk = [(state, 0, 0.0, 1.0)]
 
     #     result = 0.0
+    #     prob_sum = 0.0
 
     #     while stk:
-    #         state, last_kg, length, prob = stk.pop()
+    #         state, length, prev_knowledge, prob = stk.pop()
 
     #         next_states = self.simulate(state, elapsed_days)
-    #         current_knowledge = self.calc_knowledge(state, elapsed_days=elapsed_days)
-    #         next_kgs = [
-    #             self.calc_knowledge(next_state[1], elapsed_days=0) - current_knowledge
-    #             for next_state in next_states
+    #         next_knowledges = [
+    #             self.calc_knowledge(next_state[1], elapsed_days=0) for next_state in next_states
+    #         ]
+    #         next_knowledges_cutoff = [
+    #             next_knowledge
+    #             - self.calc_knowledge(next_state[1], elapsed_days=elapsed_days)
+    #             * GAMMA**elapsed_days
+    #             for (next_state, next_knowledge) in zip(next_states, next_knowledges)
     #         ]
 
-    #         for (next_prob, next_state), next_kg in zip(next_states, next_kgs):
-    #             if next_kg > last_kg:
-    #                 if length == MAX_DEPTH:
-    #                     result += prob * next_prob * next_kg
-    #                 else:
+    #         expected_knowledge = sum(
+    #             prob * knowledge for (prob, _), knowledge in zip(next_states, next_knowledges)
+    #         )
+
+    #         knowledge_if_not_review = prev_knowledge + self.calc_knowledge(
+    #             state, elapsed_days=elapsed_days
+    #         ) * GAMMA ** (length * elapsed_days)
+    #         knowledge_if_review = prev_knowledge + expected_knowledge * GAMMA ** (
+    #             length * elapsed_days
+    #         )
+
+    #         if (
+    #             length == 0
+    #             or (knowledge_if_review - initial_knowledge) / (length + 1)
+    #             > (knowledge_if_not_review - initial_knowledge) / length
+    #         ):
+    #             if length < MAX_DEPTH:
+    #                 for (next_prob, next_state), next_knowledge_cutoff in zip(
+    #                     next_states, next_knowledges_cutoff
+    #                 ):
     #                     stk.append(
     #                         (
     #                             next_state,
-    #                             next_kg,
     #                             length + 1,
+    #                             prev_knowledge
+    #                             + next_knowledge_cutoff * GAMMA ** (length * elapsed_days),
     #                             prob * next_prob,
     #                         )
     #                     )
     #             else:
-    #                 result += next_prob * prob * last_kg
+    #                 result += prob * (knowledge_if_review - initial_knowledge) / (length + 1)
+    #         else:
+    #             result += prob * (knowledge_if_not_review - initial_knowledge) / length
+    #             prob_sum += prob
 
     #     return result
 
@@ -235,3 +274,34 @@ class KnowledgeDiscountedMixin:
     #     )
 
     #     return result
+
+    def exp_knowledge_gain(
+        self: KnowledgeDiscountedProtocol,
+        state: State,
+        elapsed_days: float,
+        lookahead: int = 0,
+    ) -> float:
+        """
+        Calculate the expected knowledge gain.
+        Arguments:
+            state: Memory state of the card.
+            elapsed_days: Elapsed days since the last review.
+            lookahead: Lookahead strategy for future reviews.
+                0: No lookahead.
+                1: Only next day's knowledge check.
+                2: Future estimator.
+        Returns:
+            Expected knowledge gain.
+        """
+        if lookahead >= 1:
+            reviewed_knowledge = self._calc_reviewed_knowledge(state, elapsed_days=elapsed_days)
+            tomorrow_reviewed_knowledge = self._calc_reviewed_knowledge(
+                state, elapsed_days=elapsed_days + 1
+            )
+            if reviewed_knowledge < tomorrow_reviewed_knowledge:
+                return 0.0
+
+        if lookahead >= 2:
+            return self._calc_knowledge_gain_future(state, elapsed_days=elapsed_days)
+
+        return self._calc_knowledge_gain(state, elapsed_days=elapsed_days)
