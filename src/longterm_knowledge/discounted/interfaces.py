@@ -1,4 +1,3 @@
-from functools import cache
 from typing import Protocol
 
 try:
@@ -31,7 +30,6 @@ class KnowledgeDiscountedProtocol(FSRSProtocol, Protocol):
 
 
 class KnowledgeDiscountedMixin:
-    @cache
     def calc_knowledge(
         self: KnowledgeDiscountedProtocol, state: State, elapsed_days: float
     ) -> float:
@@ -55,7 +53,6 @@ class KnowledgeDiscountedMixin:
 
         return knowledge
 
-    @cache
     def _calc_knowledge_gain(
         self: KnowledgeDiscountedProtocol, state: State, elapsed_days: float
     ) -> float:
@@ -65,7 +62,6 @@ class KnowledgeDiscountedMixin:
 
         return knowledge_gain
 
-    @cache
     def _calc_knowledge_gain_futurev1(
         self: KnowledgeDiscountedProtocol,
         state: State,
@@ -111,7 +107,6 @@ class KnowledgeDiscountedMixin:
 
         return result
 
-    @cache
     def _calc_knowledge_gain_future(
         self: KnowledgeDiscountedProtocol,
         state: State,
@@ -129,13 +124,8 @@ class KnowledgeDiscountedMixin:
             return self.exp_knowledge_gain(state, elapsed_days=elapsed_days)
 
         initial_knowledge = self.calc_knowledge(state, elapsed_days=elapsed_days)
-        stk = [(state, initial_knowledge, 0, 1.0)]
 
-        result = 0.0
-
-        while stk:
-            state, last_knowledge, length, prob = stk.pop()
-
+        def dfs(state: State, last_knowledge: float, depth: int) -> float:
             next_states = self.simulate(state, elapsed_days)
             next_knowledges = [
                 self.calc_knowledge(next_state[1], elapsed_days=0) for next_state in next_states
@@ -145,30 +135,31 @@ class KnowledgeDiscountedMixin:
             )
 
             if (
-                length == 0
-                or (expected_knowledge - initial_knowledge) / (length + 1)
-                > (last_knowledge - initial_knowledge) / length
+                depth == 0
+                or (expected_knowledge - initial_knowledge) / (depth + 1)
+                > (last_knowledge - initial_knowledge) / depth
             ):
-                for (next_prob, next_state), next_knowledge in zip(next_states, next_knowledges):
-                    if length < MAX_DEPTH:
-                        stk.append(
-                            (
-                                next_state,
-                                next_knowledge,
-                                length + 1,
-                                prob * next_prob,
-                            )
+                # Do review
+                if depth < MAX_DEPTH:
+                    # Do search
+                    total = 0.0
+                    for (next_prob, next_state), next_knowledge in zip(
+                        next_states, next_knowledges
+                    ):
+                        total += next_prob * dfs(
+                            next_state,
+                            next_knowledge,
+                            depth + 1,
                         )
-                    else:
-                        result += (
-                            prob * next_prob * (next_knowledge - initial_knowledge) / (length + 1)
-                        )
+                    return total
+                else:
+                    return (expected_knowledge - initial_knowledge) / (depth + 1)
             else:
-                result += prob * (last_knowledge - initial_knowledge) / length
+                # No review
+                return (last_knowledge - initial_knowledge) / depth
 
-        return result
+        return dfs(state, initial_knowledge, 0)
 
-    # @cache
     # def _calc_knowledge_gain_future(
     #     self: KnowledgeDiscountedProtocol,
     #     state: State,
@@ -242,7 +233,6 @@ class KnowledgeDiscountedMixin:
 
     #     return result
 
-    # @cache
     # def exp_knowledge_gain_future(
     #     self: KnowledgeDiscountedProtocol,
     #     state: State,

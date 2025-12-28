@@ -1,5 +1,4 @@
 import math
-from functools import cache
 
 from . import FSRS
 from .types import State
@@ -37,7 +36,6 @@ class FSRS6(FSRS):
 
         return interval
 
-    @cache
     def simulate(
         self,
         state: State,
@@ -84,7 +82,6 @@ class FSRS6(FSRS):
 
         return res
 
-    # @cache
     # def simulate(
     #     self,
     #     state: State,
@@ -128,7 +125,6 @@ class FSRS6(FSRS):
 
     #     return res
 
-    @cache
     def simulate2(self, state: State, t_review: float) -> list[tuple[float, State]]:
         w = self.params
         D04 = self._D04

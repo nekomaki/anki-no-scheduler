@@ -1,4 +1,3 @@
-from functools import cache
 from typing import Protocol, Type, TypeVar
 
 try:
@@ -51,7 +50,6 @@ class KnowledgeDelayedMixin:
     def from_list_with_due(cls: Type[T], params: list[float], due: float) -> T:
         return cls.from_tuple_with_due(tuple(params), due)
 
-    @cache
     def calc_knowledge(
         self: KnowledgeDelayedProtocol,
         state: State,
@@ -74,7 +72,6 @@ class KnowledgeDelayedMixin:
 
         return knowledge
 
-    @cache
     def exp_knowledge_gain(
         self: KnowledgeDelayedProtocol, state: State, elapsed_days: float, today: float
     ) -> float:
@@ -85,7 +82,6 @@ class KnowledgeDelayedMixin:
 
         return reviewed_knowledge - current_knowledge
 
-    @cache
     def exp_knowledge_gain_future(
         self: KnowledgeDelayedProtocol, state: State, elapsed_days: float, today: float
     ) -> float:
